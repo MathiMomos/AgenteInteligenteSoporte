@@ -4,15 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/AgenteInteligenteSoporte.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_main.http" afterDir="false" />
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="FIRST COMMIT">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,6 +23,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "MathiMomos"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/MathiMomos/AgenteInteligenteSoporte",
+    "accountId": "bf8508dc-726f-48ea-9be9-1fb3e2263090"
+  }
+}]]></component>
   <component name="HttpClientEndpointsTabState">
     <option name="cachedRequestData" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;63d726ce0c4905b3c3271c9a6717db45e9bccbbb&quot; value=&quot;###&amp;#10;GET http://localhost:8000/&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
   </component>
@@ -102,10 +107,35 @@
       <option name="presentableId" value="Default" />
       <updated>1757144967122</updated>
       <workItem from="1757144968208" duration="308000" />
+      <workItem from="1757145385984" duration="1714000" />
     </task>
+    <task id="LOCAL-00001" summary="FIRST COMMIT">
+      <option name="closed" value="true" />
+      <created>1757145464576</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1757145464576</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="FIRST COMMIT" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIRST COMMIT" />
   </component>
 </project>

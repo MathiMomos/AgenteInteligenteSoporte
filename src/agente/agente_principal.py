@@ -59,7 +59,6 @@ def handle_query(query: str) -> str:
     Interfaz pública usada por main.py.
     Ejecuta el agente principal y devuelve la respuesta como string.
     """
-    agente = get_agente_principal()
     result = _agente_principal_executor.invoke({"input": query})   # invoke en vez de run
     return result.get("output", "")
 
