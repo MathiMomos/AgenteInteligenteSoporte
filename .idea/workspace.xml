@@ -5,7 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE PRINCIPAL UPDATE">
-      <change beforePath="$PROJECT_DIR$/src/util/util_app.py" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/ai_toolkit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_busqueda.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_busqueda.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_conocimiento.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_conocimiento.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_creacion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_creacion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/orquestacion/orquestacion_agente_inteligente.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/orquestacion/orquestacion_agente_inteligente.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_agente.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_agente.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_base_conocimientos.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_base_conocimientos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_chat.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_llm.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_llm.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,26 +29,27 @@
       <list>
         <option value="FastAPI main" />
         <option value="FastAPI test_main" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "MathiMomos"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;MathiMomos&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/MathiMomos/AgenteInteligenteSoporte",
-    "accountId": "bf8508dc-726f-48ea-9be9-1fb3e2263090"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/MathiMomos/AgenteInteligenteSoporte&quot;,
+    &quot;accountId&quot;: &quot;bf8508dc-726f-48ea-9be9-1fb3e2263090&quot;
   }
-}]]></component>
+}</component>
   <component name="HttpClientEndpointsTabState">
-    <option name="cachedRequestData" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;63d726ce0c4905b3c3271c9a6717db45e9bccbbb&quot; value=&quot;###&amp;#10;GET http://localhost:8000/&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
+    <option name="cachedRequestData" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;63d726ce0c4905b3c3271c9a6717db45e9bccbbb&quot; value=&quot;###&amp;#10;GET http://localhost:8000/&quot; /&gt;&#10;  &lt;entry key=&quot;27f3980b718a46bb694701f6f11a1f3dc3ebbb1d&quot; value=&quot;###&amp;#10;GET http://localhost:8000/hello/{{name}}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
@@ -46,27 +59,56 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;HTTP Request.test_main | #1.executor&quot;: &quot;Run&quot;,
-    &quot;HTTP Request.test_main | #2.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "FastAPI.AgenteInteligenteSoporte.executor": "Run",
+    "HTTP Request.test_main | #1.executor": "Run",
+    "HTTP Request.test_main | #2.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.orquestacion_agente_inteligente.executor": "Run",
+    "Python.test.executor": "Run",
+    "Python.test_retriever.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="FastAPI.AgenteInteligenteSoporte">
     <configuration name="test_main | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/test_main.http" executionIdentifier="#1" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="test_main | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/test_main.http" executionIdentifier="#2" index="2" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="orquestacion_agente_inteligente" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AgenteInteligenteSoporte" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/orquestacion" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/orquestacion/orquestacion_agente_inteligente.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration name="AgenteInteligenteSoporte" type="Python.FastAPI">
@@ -86,6 +128,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.orquestacion_agente_inteligente" />
         <item itemvalue="HTTP Request.test_main | #2" />
         <item itemvalue="HTTP Request.test_main | #1" />
       </list>
@@ -107,7 +150,9 @@
       <option name="presentableId" value="Default" />
       <updated>1757144967122</updated>
       <workItem from="1757144968208" duration="308000" />
-      <workItem from="1757145385984" duration="2014000" />
+      <workItem from="1757145385984" duration="3502000" />
+      <workItem from="1757149667266" duration="2165000" />
+      <workItem from="1757172586208" duration="5032000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -125,7 +170,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757147326179</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="AGENTE PRINCIPAL UPDATE">
+      <option name="closed" value="true" />
+      <created>1757147517846</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1757147517846</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -146,5 +199,11 @@
     <MESSAGE value="FIRST COMMIT" />
     <MESSAGE value="AGENTE PRINCIPAL UPDATE" />
     <option name="LAST_COMMIT_MESSAGE" value="AGENTE PRINCIPAL UPDATE" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test.coverage" NAME="test Coverage Results" MODIFIED="1757151574330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1757177856655" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$orquestacion_agente_inteligente.coverage" NAME="orquestacion_agente_inteligente Coverage Results" MODIFIED="1757151758716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/orquestacion" />
   </component>
 </project>

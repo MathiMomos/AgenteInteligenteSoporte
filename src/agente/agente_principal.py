@@ -1,64 +1,50 @@
-# Agente Principal (agents-as-tools)
-from langchain.agents import AgentExecutor, create_openai_functions_agent
-from langchain.tools import Tool
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+# src/agente/agente_principal.py
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
 
 from src.util.util_llm import get_llm
-from src.agente import agente_busqueda, agente_creacion, agente_conocimiento
+from src.agente.agente_busqueda import buscar_ticket
+from src.agente.agente_creacion import crear_ticket
+from src.agente.agente_conocimiento import agente_conocimiento
 
-def get_agente_principal() -> AgentExecutor:
+
+def get_agente_langgraph():
+    """
+    Construye y retorna el agente ejecutor de LangGraph con memoria persistente.
+    """
     llm = get_llm()
 
     tools = [
-        Tool(
-            name="AgenteBusqueda",
-            func=agente_busqueda.handle_query,
-            description="Buscar tickets en la base de datos. Devuelve resultados en JSON (mock)."
-        ),
-        Tool(
-            name="AgenteCreacion",
-            func=agente_creacion.handle_query,
-            description="Crear un ticket nuevo en la base de datos. Devuelve el ticket creado (mock)."
-        ),
-        Tool(
-            name="AgenteConocimiento",
-            func=agente_conocimiento.handle_query,
-            description="Responder dudas usando la base de conocimientos (RAG)."
-        ),
+        buscar_ticket,
+        crear_ticket,
+        agente_conocimiento,
     ]
 
     system_text = (
-        "Eres el Agente Principal de soporte. Tienes 3 herramientas:\n"
-        "- AgenteBusqueda: buscar tickets\n"
-        "- AgenteCreacion: crear tickets\n"
-        "- AgenteConocimiento: responder con la base de conocimientos\n\n"
-        "Decide cuál usar según la intención del usuario. Responde en español claro."
+        "Eres el Agente Principal de soporte. Tienes acceso a varias herramientas para ayudar al usuario.\n"
+        "Dependiendo de la intención del usuario, debes elegir la herramienta más adecuada e invocarla con los parámetros correctos.\n"
+        "Responde siempre en español de forma clara y amigable, utilizando el contexto de la conversación si es relevante."
     )
 
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", system_text),
-            ("user", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ]
-    )
+    memory = MemorySaver()
 
-    agent = create_openai_functions_agent(
-        llm=llm,
+    app = create_react_agent(
+        model=llm,
         tools=tools,
-        prompt=prompt,
+        prompt=system_text,
+        checkpointer=memory
     )
+    return app
 
-    executor = AgentExecutor(agent=agent, tools=tools, verbose=False)
-    return executor
 
-_agente_principal_executor = get_agente_principal()
+_agente_langgraph_app = get_agente_langgraph()
 
-def handle_query(query: str) -> str:
+
+def handle_query(query: str, thread_id: str) -> str:
     """
-    Interfaz pública usada por main.py.
-    Ejecuta el agente principal y devuelve la respuesta como string.
+    Interfaz pública usada por main.py. Ejecuta el agente de LangGraph.
     """
-    result = _agente_principal_executor.invoke({"input": query})   # invoke en vez de run
-    return result.get("output", "")
-
+    inputs = {"messages": [("user", query)]}
+    config = {"configurable": {"thread_id": thread_id}}
+    result = _agente_langgraph_app.invoke(inputs, config)
+    return result["messages"][-1].content

@@ -1,12 +1,16 @@
 # src/agente/agente_conocimiento.py
-from langchain.chains import RetrievalQA
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.tools import tool
+from langchain_core.runnables import Runnable
+
 from src.util.util_llm import get_llm
-from src.util.util_agente import build_rag_prompt, extract_invoke_result
+from src.util.util_agente import build_rag_prompt
 from src.util.util_base_conocimientos import get_retriever
 
-def get_agente_conocimiento_chain() -> RetrievalQA:
+def get_agente_conocimiento_chain() -> Runnable:
     """
-    Construye y retorna el RetrievalQA conectado al retriever de Azure AISearch.
+    Construye y retorna una cadena de RAG moderna conectada al retriever.
     """
     llm = get_llm()
     prompt = build_rag_prompt(
@@ -18,22 +22,18 @@ def get_agente_conocimiento_chain() -> RetrievalQA:
     )
     retriever = get_retriever()
 
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=retriever,
-        chain_type="stuff",
-        chain_type_kwargs={"prompt": prompt},
-        return_source_documents=False
-    )
-    return qa
+    question_answer_chain = create_stuff_documents_chain(llm, prompt)
+    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
-# Instancia global (se crea al importar el módulo).
+    return rag_chain
+
 _agente_conocimiento_chain = get_agente_conocimiento_chain()
 
-def handle_query(query: str) -> str:
+@tool
+def agente_conocimiento(query: str) -> str:
     """
-    Ejecuta el RAG y devuelve string. Usa .invoke() (no .run()) y normaliza el resultado.
+    Usa esta herramienta para responder dudas generales y preguntas frecuentes
+    basándote en la base de conocimientos interna (RAG).
     """
-    # invoke devuelve un dict; normalizamos con extract_invoke_result
-    result = _agente_conocimiento_chain.invoke({"query": query})
-    return extract_invoke_result(result)
+    result = _agente_conocimiento_chain.invoke({"input": query})
+    return result.get("answer", "No se pudo obtener una respuesta de la base de conocimientos.")

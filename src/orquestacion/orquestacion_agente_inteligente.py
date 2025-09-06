@@ -1,9 +1,13 @@
-# orquestacion_agente_inteligente.py
+# main.py
+import uuid
 from src.agente import agente_principal
 
 def main():
     print("=== Asistente de Soporte ===")
     print("Escribe 'salir' para terminar.\n")
+
+    thread_id = str(uuid.uuid4())
+    print(f"(Sesión de chat iniciada con ID: {thread_id})\n")
 
     while True:
         user_input = input("Usuario: ").strip()
@@ -15,8 +19,9 @@ def main():
             break
 
         try:
-            respuesta = agente_principal.handle_query(user_input)
+            respuesta = agente_principal.handle_query(user_input, thread_id)
             print(f"Asistente: {respuesta}")
+
         except Exception as e:
             print(f"[Error] {type(e).__name__}: {e}")
 
