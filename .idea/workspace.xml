@@ -4,20 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE PRINCIPAL UPDATE">
-      <change afterPath="$PROJECT_DIR$/.idea/ai_toolkit.xml" afterDir="false" />
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V1.0.1">
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agente/agente_busqueda.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_busqueda.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agente/agente_conocimiento.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_conocimiento.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agente/agente_creacion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_creacion.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/orquestacion/orquestacion_agente_inteligente.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/orquestacion/orquestacion_agente_inteligente.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_agente.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_agente.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_base_conocimientos.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_base_conocimientos.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_chat.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_llm.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_llm.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,9 +40,6 @@
     &quot;accountId&quot;: &quot;bf8508dc-726f-48ea-9be9-1fb3e2263090&quot;
   }
 }</component>
-  <component name="HttpClientEndpointsTabState">
-    <option name="cachedRequestData" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;63d726ce0c4905b3c3271c9a6717db45e9bccbbb&quot; value=&quot;###&amp;#10;GET http://localhost:8000/&quot; /&gt;&#10;  &lt;entry key=&quot;27f3980b718a46bb694701f6f11a1f3dc3ebbb1d&quot; value=&quot;###&amp;#10;GET http://localhost:8000/hello/{{name}}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
-  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -78,7 +67,14 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql",
+      "azure"
+    ]
   }
 }]]></component>
   <component name="RunManager" selected="FastAPI.AgenteInteligenteSoporte">
@@ -137,8 +133,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PY-251.26927.74" />
-        <option value="bundled-python-sdk-657d8234b839-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.74" />
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PY-252.25557.178" />
+        <option value="bundled-python-sdk-ce6832f46686-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.178" />
       </set>
     </attachedChunks>
   </component>
@@ -152,7 +148,15 @@
       <workItem from="1757144968208" duration="308000" />
       <workItem from="1757145385984" duration="3502000" />
       <workItem from="1757149667266" duration="2165000" />
-      <workItem from="1757172586208" duration="5032000" />
+      <workItem from="1757172586208" duration="9849000" />
+      <workItem from="1757203542815" duration="11178000" />
+      <workItem from="1757474359936" duration="1160000" />
+      <workItem from="1757475694049" duration="230000" />
+      <workItem from="1757476469981" duration="1943000" />
+      <workItem from="1757478468063" duration="209000" />
+      <workItem from="1757478686126" duration="976000" />
+      <workItem from="1757517062965" duration="2410000" />
+      <workItem from="1757567063198" duration="4666000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -178,7 +182,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757147517846</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="AGENTE INTELIGENTE V1.0.0">
+      <option name="closed" value="true" />
+      <created>1757179207499</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1757179207499</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -198,12 +210,13 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="FIRST COMMIT" />
     <MESSAGE value="AGENTE PRINCIPAL UPDATE" />
-    <option name="LAST_COMMIT_MESSAGE" value="AGENTE PRINCIPAL UPDATE" />
+    <MESSAGE value="AGENTE INTELIGENTE V1.0.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V1.0.0" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test.coverage" NAME="test Coverage Results" MODIFIED="1757151574330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1757177856655" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1757214938819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$orquestacion_agente_inteligente.coverage" NAME="orquestacion_agente_inteligente Coverage Results" MODIFIED="1757151758716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/orquestacion" />
   </component>
 </project>
