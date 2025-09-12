@@ -1,0 +1,10 @@
+python-dotenv~=1.1.1
+langchain-openai~=0.3.32
+langchain~=0.3.27
+SQLAlchemy~=2.0.43
+azure-core~=1.35.0
+langchain-community~=0.3.29
+langgraph~=0.6.6
+langchain-core~=0.3.75
+fastapi~=0.116.1
+pydantic~=2.11.7
