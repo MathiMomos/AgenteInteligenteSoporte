@@ -72,9 +72,12 @@ async def google_login(
     # Obtenemos el nombre y correo de la tabla External, como aclaramos
     external_info = db.query(db_utils.External).filter(db_utils.External.id_persona == persona.id_persona).first()
 
+    if not external_info:
+        raise HTTPException(status_code=500, detail="No se encontró información externa asociada a la persona.")
+
     # 3. Prepara el "pasaporte" (TokenData) con todos los datos
     token_data_payload = sch.TokenData(
-        email=external_info.correo,
+        correo=external_info.correo,  # <-- Aquí estaba el bug, antes ponías email
         nombre=external_info.nombre,
         persona_id=str(persona.id_persona),
         colaborador_id=str(colaborador.id_colaborador),

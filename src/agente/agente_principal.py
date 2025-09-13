@@ -1,28 +1,29 @@
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from sqlalchemy.orm import Session
-from functools import partial
-
 from src.util.util_llm import get_llm
 from src.util import util_schemas as sch
 
-# Importamos las herramientas "base" que acabamos de modificar
-from src.agente.agente_busqueda import buscar_ticket
-from src.agente.agente_creacion import crear_ticket
+# Importamos nuestras herramientas y fábricas
+from src.agente import agente_creacion, agente_busqueda
+from src.agente.agente_creacion import get_agente_creacion_callable, crear_ticket
+from src.agente.agente_busqueda import get_agente_busqueda_callable, buscar_ticket
 from src.agente.agente_conocimiento import agente_conocimiento
 
 
 def get_agent_executor(db: Session, user_info: sch.TokenData):
     """
-    Esta es una 'fábrica' que construye un agente con herramientas
-    personalizadas para la petición actual.
+    Construye un agente ReAct que orquesta las herramientas personalizadas.
     """
     llm = get_llm()
 
-    # Inyectamos la 'db' y 'user_info' a las herramientas que las necesitan
+    # Inyectamos el contexto en cada agente-herramienta
+    agente_creacion._agente_creacion_callable = get_agente_creacion_callable(db, user_info)
+    agente_busqueda._agente_busqueda_callable = get_agente_busqueda_callable(db, user_info)
+
     tools_personalizadas = [
-        partial(crear_ticket, db=db, user_info=user_info),
-        partial(buscar_ticket, db=db, user_info=user_info),
+        crear_ticket,
+        buscar_ticket,
         agente_conocimiento,
     ]
 
@@ -69,18 +70,21 @@ def get_agent_executor(db: Session, user_info: sch.TokenData):
     )
 
     memory = MemorySaver()
-    agent_executor = create_react_agent(model=llm, tools=tools_personalizadas, prompt=system_text, checkpointer=memory)
+    agent_executor = create_react_agent(
+        model=llm,
+        tools=tools_personalizadas,
+        prompt=system_text,
+        checkpointer=memory
+    )
     return agent_executor
 
 
 def handle_query(query: str, thread_id: str, user_info: sch.TokenData, db: Session) -> str:
     """
-    Interfaz pública que construye y ejecuta el agente para cada petición.
+    Interfaz pública que ejecuta el agente principal con la consulta del usuario.
     """
-    # 1. Construye un agente con las herramientas personalizadas
     agent_with_tools = get_agent_executor(db=db, user_info=user_info)
 
-    # 2. Prepara la consulta contextualizada
     contextual_query = f"""
     CONTEXTO DEL USUARIO ACTUAL:
     - Nombre del usuario: {user_info.nombre}
@@ -89,7 +93,6 @@ def handle_query(query: str, thread_id: str, user_info: sch.TokenData, db: Sessi
     {query}
     """
 
-    # 3. Invoca al agente y devuelve el resultado
     inputs = {"messages": [("user", contextual_query)]}
     config = {"configurable": {"thread_id": thread_id}}
     result = agent_with_tools.invoke(inputs, config)
