@@ -1,21 +1,36 @@
 # src/agente/agente_creacion.py
-import json
-from uuid import uuid4
+
 from langchain.tools import tool
+from sqlalchemy.orm import Session
+from src.util import util_schemas as sch
+from src.crud import crud_tickets
+from enum import Enum
+
+# Definimos los tipos de ticket posibles para que el LLM los conozca
+class TipoTicket(str, Enum):
+    INCIDENCIA = "incidencia"
+    SOLICITUD = "solicitud"
 
 @tool
-def crear_ticket(descripcion: str) -> str:
+def crear_ticket(asunto: str, tipo: TipoTicket, db: Session, user_info: sch.TokenData) -> str:
     """
-    Crea un nuevo ticket de soporte. Úsalo cuando el usuario quiera registrar un nuevo problema.
-    El argumento 'descripcion' debe contener un resumen claro del problema del usuario.
+    Usa esta herramienta para crear un nuevo ticket de soporte cuando ya no puedas ayudar al usuario
+    con la base de conocimientos. Debes analizar la conversación para inferir el 'asunto' y el 'tipo'.
+    'asunto' debe ser un resumen breve y claro del problema.
+    'tipo' debe ser 'incidencia' si algo está roto o no funciona, o 'solicitud' si el usuario pide algo.
     """
-    ticket_id = f"TCK-{uuid4().hex[:8].upper()}"
-    ticket = {
-        "ticket_id": ticket_id,
-        "description": descripcion,
-        "status": "abierto"
-    }
-    return json.dumps({
-        "source": "mock_creacion_v2",
-        "ticket": ticket
-    }, ensure_ascii=False)
+    try:
+        # Llama a la función CRUD para hacer el trabajo en la base de datos
+        ticket_creado = crud_tickets.create_ticket_db(
+            db=db,
+            asunto=asunto,
+            tipo=tipo.value, # Pasamos el valor del enum ('incidencia' o 'solicitud')
+            user_info=user_info
+        )
+        # Devuelve una respuesta amigable para el usuario
+        return (f"He generado el ticket #{ticket_creado.id_ticket} con el asunto '{asunto}'. "
+                "Nuestro equipo de soporte se pondrá en contacto con usted por correo electrónico. "
+                "Gracias por su paciencia. ✨")
+    except Exception as e:
+        print(f"Error en la herramienta 'crear_ticket': {e}")
+        return "Lo siento, ocurrió un error inesperado al intentar crear su ticket. Ya he notificado al equipo técnico."

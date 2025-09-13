@@ -1,25 +1,15 @@
-# src/agente/agente_busqueda.py
-import json
 from langchain.tools import tool
+from sqlalchemy.orm import Session
+from src.util import util_schemas as sch
+from src.crud import crud_tickets
 
 @tool
-def buscar_ticket(criterio_busqueda: str) -> str:
+def buscar_ticket(ticket_id: int, db: Session, user_info: sch.TokenData) -> str:
     """
-    Busca tickets existentes por un criterio de búsqueda, como un número de ticket o palabras clave.
-    Devuelve los resultados en formato JSON.
+    Busca el estado de un ticket existente usando su número de ID.
     """
-    tickets = [
-        {"id": "TCK-1001", "summary": "Usuario no puede loguearse", "status": "abierto"},
-        {"id": "TCK-1002", "summary": "Error al pagar con tarjeta", "status": "resuelto"},
-        {"id": "TCK-1003", "summary": "Consulta formas de pago", "status": "abierto"},
-    ]
-
-    q = (criterio_busqueda or "").lower()
-    filtered = [t for t in tickets if q in t["summary"].lower() or q in t["id"].lower()]
-
-    result = filtered if filtered else tickets
-    return json.dumps({
-        "source": "mock_busqueda_v2",
-        "query": criterio_busqueda,
-        "results": result
-    }, ensure_ascii=False)
+    ticket = crud_tickets.get_ticket_by_id_db(db, ticket_id=ticket_id, user_info=user_info)
+    if ticket:
+        return f"El ticket #{ticket_id} ('{ticket.asunto}') fue encontrado. Su estado actual es: '{ticket.estado}'."
+    else:
+        return f"No encontré el ticket #{ticket_id} o no tienes permiso para verlo."

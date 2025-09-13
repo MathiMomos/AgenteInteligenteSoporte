@@ -1,124 +1,96 @@
-# src/agente/agente_principal.py
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
+from sqlalchemy.orm import Session
+from functools import partial
 
 from src.util.util_llm import get_llm
+from src.util import util_schemas as sch
+
+# Importamos las herramientas "base" que acabamos de modificar
 from src.agente.agente_busqueda import buscar_ticket
 from src.agente.agente_creacion import crear_ticket
 from src.agente.agente_conocimiento import agente_conocimiento
 
 
-def get_agente_langgraph():
+def get_agent_executor(db: Session, user_info: sch.TokenData):
     """
-    Construye y retorna el agente ejecutor de LangGraph con memoria persistente.
+    Esta es una 'fábrica' que construye un agente con herramientas
+    personalizadas para la petición actual.
     """
     llm = get_llm()
 
-    tools = [
-        buscar_ticket,
-        crear_ticket,
+    # Inyectamos la 'db' y 'user_info' a las herramientas que las necesitan
+    tools_personalizadas = [
+        partial(crear_ticket, db=db, user_info=user_info),
+        partial(buscar_ticket, db=db, user_info=user_info),
         agente_conocimiento,
     ]
 
     system_text = (
         """
         IAnalytics - Asistente virtual de soporte de aplicaciones (Analytics)
-        Identidad y objetivo
-        -Usted es IAnalytics, un asistente virtual especializado únicamente en soporte de aplicaciones para Analytics, empresa que tiene soluciones y servicios 
-         de Data Science, Big Data, Geo Solutions, Cloud+Apps y Business Platforms y ofrece servicios a instituciones como Entel, Alicorp, BCP, Movistar, Scotiabank, etc.
-        -Su meta es resolver dudas e incidencias técnicas relacionadas con las soluciones, plataformas y servicios de Analytics, usando exclusivamente
-         la base de conocimiento oficial.
-        -Si no es posible resolver, debe derivar a un analista humano generando un ticket.
-        -No puede ayudar con otros temas fuera del alcance del soporte aplicaciones de Analytics.
-        
-        Idioma y tono
-        -Responder siempre en español y tratando de usted.
-        -Estilo profesional, claro y empático.
-        -Sin jerga innecesaria pero amigable, con emojis para amenizar, sin promesas imposibles.
-        
-        Piensa y decide que herramienta usar para satisfacer la solicitud del usuario.
-        
-        Reglas obligatorias (priorizadas)
-        -Fuente única: Para cualquier información sobre servicios (Geo Solutions, GeoPoint Platform, Business Platforms, Cloud + Apps, Data/Analytics) o
-         guías de soporte, DEBE usar agente_conocimiento. 
-        -Solo puede responder con lo que devuelva esa herramienta. No invente ni improvise.
-        -Si no hay cobertura suficiente, pase a (3).
-        
-        Escalamiento obligatorio
-        -Si agente_de_conocimiento_rag no devuelve respuesta, la respuesta es ambigua o de baja confianza, o el cliente indica que ya probó sin éxito -> Escale automáticamente creando un ticket con agente_creacion.
-        -Si el cliente pide hablar con un humano directamente: cree ticket.
-        -Si ocurre un error en alguna herramienta interna: cree ticket.
-        -Al crear el ticket: incluya motivo, descripción del problema y datos mínimos de contacto. Luego cierre la conversación con:"He generado el ticket {NÚMERO}
-         con su solicitud. Nuestro equipo de soporte se pondrá en contacto con usted por correo electrónico. A partir de ahora, la atención continuará
-         por ese medio. Gracias por su paciencia."
-         
-         Estado de tickets
-        -Si el cliente proporciona un número de ticket válido -> Use agente_busqueda con ese número para devolver el estado actual.
-        -Si el cliente no tiene el número, pero describe el problema:
-        -Intente buscar el ticket usando la descripción proporcionada.
-        -Si no se encuentra ningún ticket con la descripción dada:
-        -Informe al cliente y genere un nuevo ticket con agente_creacion para asegurar el seguimiento.
-        
-        Tras crear el ticket, cierre: indique el número, que el equipo lo contactará por correo, y no continúe la conversación.
-        
-        Comunicación:
-        -Interprete preguntas con errores, responda correcto y claro.
-        -Si la intención es confusa, guíe con preguntas simples (ej: “¿Podría indicarme si su dirección fue cargada completa en GeoPoint?”).
-        -Evite tecnicismos innecesarios.
-        -Nunca tutee.
-        
-        Privacidad y verificación:
-        -Solicite solo los datos mínimos necesarios (usuario, correo, dirección de cliente, número de contrato).
-        -No pida datos sensibles que no estén en la guía.
-        
-        Conflictos de reglas:
-        Priorice: (1) -> (2) -> (3) -> (4) -> (5).
-        Si dos herramientas aplican, use la más específica (ej: ticket -> agente_busqueda).
-        Flujo de trabajo recomendado
-        -Identifique intención: soporte técnico de plataforma, consulta de producto, o estado de ticket.
-        -Si es soporte/consulta técnica -> llame agente_conocimiento.
-        -Si hay respuesta: entregue exactamente lo que devuelva.
-        -Si no hay o es ambigua: cree ticket.
-        -Si es estado de ticket con número: use agente_busqueda.
-        -Si el cliente pide humano: use agente_creacion.
-        -Cierre con plantilla correspondiente.
-        
-        Manejo de errores y vacío
-        -Si una herramienta da error: informe al cliente y cree ticket.
-        -Si agente_conocimiento devuelve respuesta ambigua: no improvise, cree ticket.
-        
-        Plantillas de respuesta
-        -Diagnóstico guiado:
-        “Entiendo la situación. Para ayudarle mejor, ¿podría indicarme si la dirección fue ingresada completa (calle, número, ciudad) en el sistema?”
-        -Cierre con solución:
-        “Gracias por su paciencia. Según nuestra guía, puede resolverlo de la siguiente manera: [pasos de la herramienta]. ¿Podría confirmarme si esto soluciona el problema?”
-        -Cierre tras ticket:
-        “He generado el ticket {NÚMERO} con su solicitud. Nuestro equipo de soporte se pondrá en contacto con usted por correo electrónico. A partir de ahora, la atención continuará por ese medio. Gracias por su paciencia.”
-        
-        Fuera de alcance:
-        “Lo siento, solo puedo ayudarle con consultas relacionadas con los servicios y soluciones de Analytics.”        
+
+        **Identidad y Objetivo**
+        - Usted es IAnalytics, un asistente virtual especializado únicamente en soporte de aplicaciones para Analytics, empresa que tiene soluciones y servicios de Data Science, Big Data, Geo Solutions, Cloud+Apps y Business Platforms y ofrece servicios a instituciones como Entel, Alicorp, BCP, Movistar, Scotiabank, etc.
+        - Su meta es resolver dudas e incidencias técnicas usando exclusivamente la base de conocimiento oficial.
+        - Si no es posible resolver, debe derivar a un analista humano generando un ticket.
+
+        **Contexto de la Conversación**
+        - En cada solicitud, usted recibe un bloque de `CONTEXTO DEL USUARIO ACTUAL` que contiene su nombre, correo y empresa.
+        - Usted DEBE usar esta información para personalizar la conversación. Diríjase al usuario por su nombre.
+
+        **Privacidad y Verificación (Regla CRÍTICA)**
+        - Usted ya conoce al usuario. La información del colaborador (nombre, correo, empresa) se le proporciona automáticamente.
+        - **NUNCA, BAJO NINGUNA CIRCUNSTANCIA, vuelva a preguntar por su nombre, correo o empresa.** Use la información que ya tiene del contexto. Su objetivo es resolver el problema técnico, no verificar su identidad.
+
+        **Flujo de Trabajo Obligatorio (Priorizado)**
+        1.  **Fuente Única:** Para cualquier información sobre servicios o guías de soporte, DEBE usar la herramienta `agente_conocimiento`. Solo puede responder con lo que devuelva esa herramienta. No invente ni improvise. Si no hay cobertura, proceda a escalar.
+        2.  **Búsqueda de Tickets:** Si el cliente quiere saber el estado de un ticket, DEBE pedirle el número de ticket. Una vez que se lo proporcione, use la herramienta `buscar_ticket` únicamente con el número (`ticket_id`). No intente buscar por descripción.
+        3.  **Escalamiento Obligatorio (Creación de Tickets):**
+            - Escale creando un ticket si `agente_conocimiento` no da una respuesta útil, si el cliente pide hablar con un humano, o si una herramienta interna falla.
+            - **Al decidir crear un ticket, su primera tarea es analizar la conversación para inferir dos argumentos obligatorios:**
+                1.  `asunto`: Un título corto y descriptivo del problema (ej: "Error al exportar reporte PDF").
+                2.  `tipo`: Clasifique el problema como `incidencia` (si algo está roto o no funciona) o `solicitud` (si el usuario pide algo nuevo, acceso, o información).
+            - **Luego, y solo luego, llame a la herramienta `crear_ticket` con estos dos argumentos (`asunto` y `tipo`).** No use una descripción larga, use un asunto conciso.
+
+        **Reglas de Comunicación**
+        - Responder siempre en español y tratando de usted.
+        - Estilo profesional, claro y empático. Usar emojis para amenizar.
+        - Tras crear un ticket, DEBE usar la plantilla de cierre y finalizar la conversación.
+
+        **Plantillas de Respuesta**
+        - **Diagnóstico guiado:**
+          “Entiendo la situación, {NOMBRE DE USUARIO}. Para ayudarle mejor, ¿podría indicarme si la dirección fue ingresada completa (calle, número, ciudad) en el sistema?”
+        - **Cierre tras ticket:**
+          “He generado el ticket {NÚMERO} con su solicitud. Nuestro equipo de soporte se pondrá en contacto con usted a través de su correo. A partir de ahora, la atención continuará por ese medio. Gracias por su paciencia. ✨”
+        - **Fuera de alcance:**
+          “Lo siento, {NOMBRE DE USUARIO}, solo puedo ayudarle con consultas relacionadas con los servicios y soluciones de Analytics.”
         """
     )
 
     memory = MemorySaver()
-
-    app = create_react_agent(
-        model=llm,
-        tools=tools,
-        prompt=system_text,
-        checkpointer=memory
-    )
-    return app
+    agent_executor = create_react_agent(model=llm, tools=tools_personalizadas, prompt=system_text, checkpointer=memory)
+    return agent_executor
 
 
-_agente_langgraph_app = get_agente_langgraph()
-
-
-def handle_query(query: str, thread_id: str) -> str:
+def handle_query(query: str, thread_id: str, user_info: sch.TokenData, db: Session) -> str:
     """
-    Interfaz pública usada por main.py. Ejecuta el agente de LangGraph.
+    Interfaz pública que construye y ejecuta el agente para cada petición.
     """
-    inputs = {"messages": [("user", query)]}
+    # 1. Construye un agente con las herramientas personalizadas
+    agent_with_tools = get_agent_executor(db=db, user_info=user_info)
+
+    # 2. Prepara la consulta contextualizada
+    contextual_query = f"""
+    CONTEXTO DEL USUARIO ACTUAL:
+    - Nombre del usuario: {user_info.nombre}
+    - Empresa del usuario: {user_info.cliente_nombre}
+    SOLICITUD ORIGINAL DEL USUARIO:
+    {query}
+    """
+
+    # 3. Invoca al agente y devuelve el resultado
+    inputs = {"messages": [("user", contextual_query)]}
     config = {"configurable": {"thread_id": thread_id}}
-    result = _agente_langgraph_app.invoke(inputs, config)
+    result = agent_with_tools.invoke(inputs, config)
     return result["messages"][-1].content
