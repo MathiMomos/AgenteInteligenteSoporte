@@ -34,7 +34,7 @@ app.add_middleware(
 
 
 ### Endpoint de Autenticación con Google ###
-@app.post("/auth/google/login", response_model=sch.Token, tags=["Auth"])
+@app.post("/api/auth/google/login", response_model=sch.Token, tags=["Auth"])
 async def google_login(
         request: sch.GoogleLoginRequest,
         db: Session = Depends(db_utils.get_db)
@@ -90,7 +90,7 @@ async def google_login(
 
 
 ### Endpoints de la Aplicación ###
-@app.post("/chat", response_model=sch.ChatResponse, tags=["Chatbot"])
+@app.post("/api/chat", response_model=sch.ChatResponse, tags=["Chatbot"])
 async def chat_with_agent(
     request: sch.ChatRequest,
     db: Session = Depends(db_utils.get_db),
