@@ -1,5 +1,7 @@
+from platform import system
+
 from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver
+from src.util.util_memory import memory
 from sqlalchemy.orm import Session
 from src.util.util_llm import get_llm
 from src.util import util_schemas as sch
@@ -9,10 +11,8 @@ from src.agente.agente_creacion import get_agente_creacion_callable, crear_ticke
 from src.agente.agente_busqueda import get_agente_busqueda
 from src.agente.agente_conocimiento import agente_conocimiento
 
-memory = MemorySaver()
 
-
-def get_agent_executor(db: Session, user_info: sch.TokenData):
+def get_agent_executor(db: Session, user_info: sch.TokenData, thread_id: str):
     """
     Construye un agente ReAct que orquesta las herramientas personalizadas.
     """
@@ -21,7 +21,7 @@ def get_agent_executor(db: Session, user_info: sch.TokenData):
     # Inyectamos el contexto en cada agente-herramienta
     # (creación y búsqueda necesitan db + usuario)
     from src.agente import agente_creacion
-    agente_creacion._agente_creacion_callable = get_agente_creacion_callable(db, user_info)
+    agente_creacion._agente_creacion_callable = get_agente_creacion_callable(db, user_info, thread_id)
 
     tools_personalizadas = [
         crear_ticket,  # creación de tickets
@@ -89,18 +89,15 @@ def handle_query(query: str, thread_id: str, user_info: sch.TokenData, db: Sessi
     """
     Interfaz pública que ejecuta el agente principal con la consulta del usuario.
     """
-    agent_with_tools = get_agent_executor(db=db, user_info=user_info)
+    agent_with_tools = get_agent_executor(db=db, user_info=user_info, thread_id=thread_id)
 
     contextual_query = f"""
     CONTEXTO DEL USUARIO ACTUAL:
     - Nombre del usuario: {user_info.nombre}
     - Empresa del usuario: {user_info.cliente_nombre}
-    SOLICITUD ORIGINAL DEL USUARIO:
-    {query}
     """
 
-    inputs = {"messages": [("user", contextual_query)]}
+    inputs = {"messages": [("system", contextual_query), ("user", query)]}
     config = {"configurable": {"thread_id": thread_id}}
     result = agent_with_tools.invoke(inputs, config)
-    print(result)
     return result["messages"][-1].content

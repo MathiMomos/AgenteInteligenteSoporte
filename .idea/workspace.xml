@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V2.1.1 FUNCIONAL">
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V2.2">
+      <change afterPath="$PROJECT_DIR$/src/util/util_formatear_conversacion.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/util/util_memory.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agente/agente_busqueda.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_busqueda.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_creacion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_creacion.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/crud/crud_tickets.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/crud/crud_tickets.py" afterDir="false" />
     </list>
@@ -178,7 +180,7 @@
       <workItem from="1757632559951" duration="2245000" />
       <workItem from="1757639590531" duration="10260000" />
       <workItem from="1757726260917" duration="18748000" />
-      <workItem from="1757779809436" duration="32354000" />
+      <workItem from="1757779809436" duration="44333000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -260,7 +262,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757811768984</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="AGENTE INTELIGENTE V2.2">
+      <option name="closed" value="true" />
+      <created>1757824592730</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1757824592730</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -287,12 +297,13 @@
     <MESSAGE value="AGENTE INTELIGENTE V2.0.0" />
     <MESSAGE value="AGENTE INTELIGENTE V2.1.0" />
     <MESSAGE value="AGENTE INTELIGENTE V2.1.1 FUNCIONAL" />
-    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V2.1.1 FUNCIONAL" />
+    <MESSAGE value="AGENTE INTELIGENTE V2.2" />
+    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V2.2" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$orquestacion_agente_inteligente.coverage" NAME="orquestacion_agente_inteligente Coverage Results" MODIFIED="1757151758716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/orquestacion" />
-    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1757823910850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1757841858302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test.coverage" NAME="test Coverage Results" MODIFIED="1757151574330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

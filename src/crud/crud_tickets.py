@@ -32,6 +32,18 @@ def create_ticket_db(db_session: Session, asunto: str, tipo: str, user_info: sch
     db_session.refresh(new_ticket)
     return new_ticket
 
+def save_conversation_db(db_session: Session, ticket_id: int, conversation: list[dict]):
+    """
+    Guarda la conversación en la tabla `conversacion` asociada a un ticket.
+    """
+    new_conversacion = db.Conversacion(
+        id_ticket=ticket_id,
+        contenido=conversation
+    )
+    db_session.add(new_conversacion)
+    db_session.commit()
+    db_session.refresh(new_conversacion)
+    return new_conversacion
 
 def get_ticket_by_id_db(db_session: Session, ticket_id: int, user_info: sch.TokenData) -> db.Ticket | None:
     """
