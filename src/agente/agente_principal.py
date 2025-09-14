@@ -5,12 +5,12 @@ from src.util.util_llm import get_llm
 from src.util import util_schemas as sch
 
 # Importamos nuestras herramientas y fábricas
-from src.agente import agente_creacion, agente_busqueda
 from src.agente.agente_creacion import get_agente_creacion_callable, crear_ticket
-from src.agente.agente_busqueda import get_agente_busqueda_callable, buscar_ticket
+from src.agente.agente_busqueda import get_agente_busqueda
 from src.agente.agente_conocimiento import agente_conocimiento
 
 memory = MemorySaver()
+
 
 def get_agent_executor(db: Session, user_info: sch.TokenData):
     """
@@ -19,13 +19,14 @@ def get_agent_executor(db: Session, user_info: sch.TokenData):
     llm = get_llm()
 
     # Inyectamos el contexto en cada agente-herramienta
+    # (creación y búsqueda necesitan db + usuario)
+    from src.agente import agente_creacion
     agente_creacion._agente_creacion_callable = get_agente_creacion_callable(db, user_info)
-    agente_busqueda._agente_busqueda_callable = get_agente_busqueda_callable(db, user_info)
 
     tools_personalizadas = [
-        crear_ticket,
-        buscar_ticket,
-        agente_conocimiento,
+        crear_ticket,  # creación de tickets
+        get_agente_busqueda(db, user_info),  # búsqueda de tickets (wrapper tool)
+        agente_conocimiento,  # RAG de conocimiento
     ]
 
     system_text = (
@@ -47,9 +48,14 @@ def get_agent_executor(db: Session, user_info: sch.TokenData):
 
         **Flujo de Trabajo Obligatorio (Priorizado)**
         1.  **Fuente Única:** Para cualquier información sobre servicios o guías de soporte, DEBE usar la herramienta `agente_conocimiento`. Solo puede responder con lo que devuelva esa herramienta. No invente ni improvise. Si no hay cobertura, proceda a escalar.
-        2.  **Búsqueda de Tickets:** Si el cliente quiere saber el estado de un ticket, DEBE pedirle el número de ticket. Una vez que se lo proporcione, use la herramienta `buscar_ticket` únicamente con el número (`ticket_id`). No intente buscar por descripción.
+
+        2.  **Búsqueda de Tickets:**
+            - Si el cliente pide el estado de un ticket específico y da un número, use la herramienta `agente_busqueda` con ese número (`ticket_id`).
+            - Si el cliente pide "todos mis tickets" o una lista de tickets, use igualmente la herramienta `agente_busqueda` para traer todos los tickets abiertos del usuario.
+            - Si el cliente describe un problema relacionado con el asunto de un ticket (ej: "mi problema de red"), intente buscar tickets relacionados por asunto usando la herramienta `agente_busqueda`.
+
         3.  **Escalamiento Obligatorio (Creación de Tickets):**
-            - Escale creando un ticket si `agente_conocimiento` no da una respuesta útil, o si una herramienta interna falla, pero antes de eso, debes preguntarle al usuario si desea eso, indicandele que no tiene conocimiento sobre esa información.
+            - Escale creando un ticket si `agente_conocimiento` no da una respuesta útil, o si una herramienta interna falla, pero antes de eso, debe preguntarle al usuario si desea eso, indicándole que no tiene conocimiento sobre esa información.
             - **Al decidir crear un ticket, su primera tarea es analizar la conversación para inferir dos argumentos obligatorios:**
                 1.  `asunto`: Un título corto y descriptivo del problema (ej: "Error al exportar reporte PDF").
                 2.  `tipo`: Clasifique el problema como `incidencia` (si algo está roto o no funciona) o `solicitud` (si el usuario pide algo nuevo, acceso, o información).
@@ -74,7 +80,7 @@ def get_agent_executor(db: Session, user_info: sch.TokenData):
         model=llm,
         tools=tools_personalizadas,
         prompt=system_text,
-        checkpointer=memory
+        checkpointer=memory,
     )
     return agent_executor
 
@@ -96,4 +102,5 @@ def handle_query(query: str, thread_id: str, user_info: sch.TokenData, db: Sessi
     inputs = {"messages": [("user", contextual_query)]}
     config = {"configurable": {"thread_id": thread_id}}
     result = agent_with_tools.invoke(inputs, config)
+    print(result)
     return result["messages"][-1].content

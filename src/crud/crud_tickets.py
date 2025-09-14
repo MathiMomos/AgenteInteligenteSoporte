@@ -51,3 +51,32 @@ def get_ticket_by_id_db(db_session: Session, ticket_id: int, user_info: sch.Toke
     print(f"DEBUG - buscando ticket {ticket_id} con colaborador {colaborador_uuid}")
 
     return ticket
+
+def get_all_open_tickets(db_session: Session, user_info: sch.TokenData) -> list[db.Ticket]:
+    """
+    Devuelve todos los tickets abiertos (no finalizados) del colaborador actual.
+    """
+    try:
+        colaborador_uuid = uuid.UUID(user_info.colaborador_id)
+    except Exception:
+        return []
+
+    return db_session.query(db.Ticket).filter(
+        db.Ticket.id_colaborador == colaborador_uuid,
+        db.Ticket.estado != "finalizado"
+    ).all()
+
+
+def get_tickets_by_subject(db_session: Session, subject: str, user_info: sch.TokenData) -> list[db.Ticket]:
+    """
+    Busca tickets por coincidencia parcial en el asunto, para el colaborador actual.
+    """
+    try:
+        colaborador_uuid = uuid.UUID(user_info.colaborador_id)
+    except Exception:
+        return []
+
+    return db_session.query(db.Ticket).filter(
+        db.Ticket.id_colaborador == colaborador_uuid,
+        db.Ticket.asunto.ilike(f"%{subject}%")
+    ).all()
