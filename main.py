@@ -1,4 +1,5 @@
 # src/main.py
+import uuid
 
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -99,14 +100,22 @@ async def chat_with_agent(
     db: Session = Depends(db_utils.get_db),
     current_user: sch.TokenData = Depends(security.get_current_user)
 ):
-    print(f"Chat iniciado por: {current_user.nombre} de la empresa {current_user.cliente_nombre}")
+    # Reutilizar el thread_id si existe, si no generar uno nuevo
+    thread_id = request.thread_id or str(uuid.uuid4())
+
+    print(f"[THREAD {thread_id}] Chat iniciado por: {current_user.nombre} de la empresa {current_user.cliente_nombre}")
+    print(f"DEBUG - colaborador_id en TokenData: {current_user.colaborador_id}")
+
     response_text = agente_principal.handle_query(
         query=request.query,
-        thread_id=request.thread_id,
+        thread_id=thread_id,
         user_info=current_user,
         db=db
     )
-    return sch.ChatResponse(response=response_text, thread_id=request.thread_id)
+
+    # Siempre devolver un thread_id válido
+    return sch.ChatResponse(response=response_text, thread_id=thread_id)
+
 
 
 @app.get("/", tags=["Root"])

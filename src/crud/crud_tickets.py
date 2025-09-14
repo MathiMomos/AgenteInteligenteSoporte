@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy.orm import Session
 from src.util import util_base_de_datos as db
 from src.util import util_schemas as sch
@@ -36,10 +38,16 @@ def get_ticket_by_id_db(db_session: Session, ticket_id: int, user_info: sch.Toke
     Busca un ticket por su ID, asegurándose de que pertenezca al colaborador
     que realiza la consulta.
     """
-    ticket = db_session.query(db.Ticket).filter(db.Ticket.id_ticket == ticket_id).first()
+    try:
+        colaborador_uuid = uuid.UUID(user_info.colaborador_id)  # 👈 convertir str → UUID
+    except Exception:
+        return None
 
-    # Verificación de seguridad: El ticket debe existir Y pertenecer al colaborador.
-    if ticket and ticket.id_colaborador == user_info.colaborador_id:
-        return ticket
+    ticket = db_session.query(db.Ticket).filter(
+        db.Ticket.id_ticket == ticket_id,
+        db.Ticket.id_colaborador == colaborador_uuid
+    ).first()
 
-    return None
+    print(f"DEBUG - buscando ticket {ticket_id} con colaborador {colaborador_uuid}")
+
+    return ticket

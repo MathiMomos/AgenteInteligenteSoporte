@@ -21,6 +21,10 @@ def get_agente_busqueda_callable(db: Session, user_info: sch.TokenData):
             return f"El ticket #{ticket_id} ('{ticket.asunto}') fue encontrado. Estado actual: '{ticket.estado}'."
         else:
             return f"No encontré el ticket #{ticket_id} o no tienes permiso para verlo."
+
+    # 🔑 Aquí asignamos el callable a la variable global
+    global _agente_busqueda_callable
+    _agente_busqueda_callable = _buscar_ticket
     return _buscar_ticket
 
 @tool

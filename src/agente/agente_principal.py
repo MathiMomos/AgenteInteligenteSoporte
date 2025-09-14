@@ -10,6 +10,7 @@ from src.agente.agente_creacion import get_agente_creacion_callable, crear_ticke
 from src.agente.agente_busqueda import get_agente_busqueda_callable, buscar_ticket
 from src.agente.agente_conocimiento import agente_conocimiento
 
+memory = MemorySaver()
 
 def get_agent_executor(db: Session, user_info: sch.TokenData):
     """
@@ -48,7 +49,7 @@ def get_agent_executor(db: Session, user_info: sch.TokenData):
         1.  **Fuente Única:** Para cualquier información sobre servicios o guías de soporte, DEBE usar la herramienta `agente_conocimiento`. Solo puede responder con lo que devuelva esa herramienta. No invente ni improvise. Si no hay cobertura, proceda a escalar.
         2.  **Búsqueda de Tickets:** Si el cliente quiere saber el estado de un ticket, DEBE pedirle el número de ticket. Una vez que se lo proporcione, use la herramienta `buscar_ticket` únicamente con el número (`ticket_id`). No intente buscar por descripción.
         3.  **Escalamiento Obligatorio (Creación de Tickets):**
-            - Escale creando un ticket si `agente_conocimiento` no da una respuesta útil, si el cliente pide hablar con un humano, o si una herramienta interna falla.
+            - Escale creando un ticket si `agente_conocimiento` no da una respuesta útil, o si una herramienta interna falla, pero antes de eso, debes preguntarle al usuario si desea eso, indicandele que no tiene conocimiento sobre esa información.
             - **Al decidir crear un ticket, su primera tarea es analizar la conversación para inferir dos argumentos obligatorios:**
                 1.  `asunto`: Un título corto y descriptivo del problema (ej: "Error al exportar reporte PDF").
                 2.  `tipo`: Clasifique el problema como `incidencia` (si algo está roto o no funciona) o `solicitud` (si el usuario pide algo nuevo, acceso, o información).
@@ -69,7 +70,6 @@ def get_agent_executor(db: Session, user_info: sch.TokenData):
         """
     )
 
-    memory = MemorySaver()
     agent_executor = create_react_agent(
         model=llm,
         tools=tools_personalizadas,
