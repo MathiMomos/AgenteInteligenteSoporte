@@ -4,6 +4,8 @@ import datetime
 from sqlalchemy.orm import Session
 from src.util import util_base_de_datos as db
 from src.util import util_schemas as sch
+from typing import Optional
+
 
 
 def create_ticket_db(db_session: Session, asunto: str, tipo: str, user_info: sch.TokenData) -> db.Ticket:
@@ -212,25 +214,32 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
 
     return info
 
-def update_ticket_status_db(db_session: Session, ticket_id: int, new_status: str):
+def update_ticket_status_db(
+    db_session: Session,
+    ticket_id: int,
+    new_status: str,
+    description: Optional[str] = None,
+):
     """
-    Actualiza el campo 'estado' de un ticket.
-    new_status debe venir normalizado en minúsculas (ej: 'aceptado', 'en atención', 'cerrado', 'cancelado', 'rechazado').
+    Actualiza el estado de un ticket. Si new_status == 'finalizado':
+    - setea closed_at
+    - guarda 'description' en ticket.diagnostico (si viene)
     """
-    ticket = db_session.query(db.Ticket).filter(db.Ticket.id_ticket == ticket_id).first()
+    ticket = (
+        db_session.query(db.Ticket)
+        .filter(db.Ticket.id_ticket == ticket_id)
+        .first()
+    )
     if not ticket:
         return None
 
-    # Normaliza 'en atencion' → 'en atención'
-    ns = new_status.strip().lower()
-    if ns == "en atencion":
-        ns = "en atención"
+    ticket.estado = new_status
+    ticket.updated_at = datetime.datetime.utcnow()
 
-    ticket.estado = ns
-    try:
-        ticket.updated_at = datetime.datetime.utcnow()
-    except Exception:
-        pass
+    if new_status == "finalizado":
+        ticket.closed_at = datetime.datetime.utcnow()
+        if description:
+            ticket.diagnostico = description[:5000]
 
     db_session.commit()
     db_session.refresh(ticket)
