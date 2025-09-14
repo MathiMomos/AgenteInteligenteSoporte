@@ -12,7 +12,7 @@ from src.util import util_schemas as sch
 
 ### Configuración de Seguridad
 
-# Lee la clave secreta del archivo .env
+# Lee la clave secreta del archivo ..env
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("No se encontró SECRET_KEY en las variables de entorno.")

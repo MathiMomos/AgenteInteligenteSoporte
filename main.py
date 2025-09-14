@@ -12,6 +12,10 @@ from src.util import util_base_de_datos as db_utils
 from src.agente import agente_principal
 from src.auth import security
 from src.crud import crud_users
+from typing import List
+from fastapi import Query
+from src.crud import crud_tickets  # ya lo usas en otros módulos
+
 
 # --- Importaciones de Google ---
 from google.oauth2 import id_token
@@ -40,14 +44,11 @@ async def google_login(
         request: sch.GoogleLoginRequest,
         db: Session = Depends(db_utils.get_db)
 ):
-    """
-    Recibe un id_token de Google desde el frontend, lo verifica,
-    gestiona al usuario en la BD y devuelve un token de sesión propio.
-    """
     google_client_id = os.getenv("GOOGLE_CLIENT_ID")
     if not google_client_id:
         raise HTTPException(status_code=500, detail="GOOGLE_CLIENT_ID no configurado")
 
+    # 1) Verificar id_token de Google
     try:
         id_info = id_token.verify_oauth2_token(request.id_token, grequests.Request(), google_client_id)
         if id_info.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
@@ -55,42 +56,47 @@ async def google_login(
     except ValueError as e:
         raise HTTPException(status_code=401, detail=f"Token de Google inválido: {e}")
 
-    # 1. Llama al CRUD para obtener o crear la Persona
+    # 2) Obtener/crear Persona y External
     persona = crud_users.get_or_create_from_external(db_session=db, id_info=id_info)
-
-    # 2. Reúne toda la información necesaria para el token
-    colaborador = db.query(db_utils.Colaborador).filter(db_utils.Colaborador.id_persona == persona.id_persona).first()
-
-    if not colaborador:
-        raise HTTPException(
-            status_code=403,
-            detail="Acceso denegado. Este usuario no está registrado como colaborador de un cliente activo."
-        )
-
-    # Obtenemos el cliente a través del colaborador
-    cliente = db.query(db_utils.Cliente).filter(db_utils.Cliente.id_cliente == colaborador.id_cliente).first()
-
-    # Obtenemos el nombre y correo de la tabla External, como aclaramos
     external_info = db.query(db_utils.External).filter(db_utils.External.id_persona == persona.id_persona).first()
-
     if not external_info:
         raise HTTPException(status_code=500, detail="No se encontró información externa asociada a la persona.")
 
-    # 3. Prepara el "pasaporte" (TokenData) con todos los datos
-    token_data_payload = sch.TokenData(
-        correo=external_info.correo,  # <-- Aquí estaba el bug, antes ponías email
-        nombre=external_info.nombre,
-        persona_id=str(persona.id_persona),
-        colaborador_id=str(colaborador.id_colaborador),
-        cliente_id=str(colaborador.id_cliente),
-        cliente_nombre=cliente.nombre if cliente else "Cliente Desconocido"
+    # 3) Si es COLABORADOR, emitir token normal (como ya lo tenías)
+    colaborador = db.query(db_utils.Colaborador).filter(db_utils.Colaborador.id_persona == persona.id_persona).first()
+    if colaborador:
+        cliente = db.query(db_utils.Cliente).filter(db_utils.Cliente.id_cliente == colaborador.id_cliente).first()
+        token_data_payload = sch.TokenData(
+            correo=external_info.correo,
+            nombre=external_info.nombre,
+            persona_id=str(persona.id_persona),
+            colaborador_id=str(colaborador.id_colaborador),
+            cliente_id=str(colaborador.id_cliente),
+            cliente_nombre=cliente.nombre if cliente else "Cliente Desconocido"
+        )
+        access_token = security.create_access_token(data=token_data_payload)
+        return {"access_token": access_token, "token_type": "bearer"}
+
+    # 4) Si no es colaborador, intentar como ANALISTA
+    analista = db.query(db_utils.Analista).filter(db_utils.Analista.id_persona == persona.id_persona).first()
+    if analista:
+        # Valores 'dummy' para campos de colaborador/cliente (requeridos por el esquema)
+        token_data_payload = sch.TokenData(
+            correo=external_info.correo,
+            nombre=external_info.nombre,
+            persona_id=str(persona.id_persona),
+            colaborador_id="00000000-0000-0000-0000-000000000000",
+            cliente_id="00000000-0000-0000-0000-000000000000",
+            cliente_nombre="ANALYTICS"
+        )
+        access_token = security.create_access_token(data=token_data_payload)
+        return {"access_token": access_token, "token_type": "bearer"}
+
+    # 5) Ni colaborador ni analista -> 403
+    raise HTTPException(
+        status_code=403,
+        detail="Acceso denegado. Este usuario no está registrado como colaborador ni como analista."
     )
-
-    # 4. Crea nuestro token de sesión
-    access_token = security.create_access_token(data=token_data_payload)
-
-    # 5. Devuelve el token al frontend
-    return {"access_token": access_token, "token_type": "bearer"}
 
 
 ### Endpoints de la Aplicación ###
@@ -121,3 +127,73 @@ async def chat_with_agent(
 @app.get("/", tags=["Root"])
 def root():
     return {"message": "API del Agente Inteligente de Soporte funcionando."}
+
+# ===================== RUTAS PARA ANALISTA =====================
+
+@app.get("/api/analista/conversaciones", response_model=sch.AnalystTicketPage, tags=["Analista"])
+def listar_conversaciones_analista(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(db_utils.get_db),
+    current_user: sch.TokenData = Depends(security.get_current_user)
+):
+    """
+    Lista paginada de tickets asignados al analista actual.
+    Si el usuario no es analista, se usa el analista por defecto (Ana Lytics - External #8).
+    """
+    analyst_id = crud_tickets.get_analyst_id_for_current_user_or_default(db, current_user)
+    if not analyst_id:
+        return sch.AnalystTicketPage(items=[], total=0, limit=limit, offset=offset)
+
+    rows, total = crud_tickets.get_tickets_by_analyst(db, analyst_id, limit=limit, offset=offset)
+
+    items: List[sch.AnalystTicketItem] = []
+    for t in rows:
+        info = crud_tickets.hydrate_ticket_info(db, t)
+        items.append(
+            sch.AnalystTicketItem(
+                id_ticket=info["id_ticket"],
+                subject=info["subject"] or "",
+                user=info["user"],
+                service=info["service"],
+                status=info["status"],
+                date=info["date"],
+            )
+        )
+
+    return sch.AnalystTicketPage(items=items, total=total, limit=limit, offset=offset)
+
+
+@app.get("/api/analista/conversaciones/{id_ticket}", response_model=sch.AnalystTicketDetail, tags=["Analista"])
+def detalle_conversacion_analista(
+    id_ticket: int,
+    db: Session = Depends(db_utils.get_db),
+    current_user: sch.TokenData = Depends(security.get_current_user)
+):
+    """
+    Devuelve el detalle del ticket y el hilo de conversación guardado.
+    """
+    t = crud_tickets.get_ticket_admin_by_id(db, id_ticket)
+    if not t:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado")
+
+    info = crud_tickets.hydrate_ticket_info(db, t)
+
+    conv = crud_tickets.get_conversation_by_ticket(db, id_ticket)
+    conversation = []
+    if conv and getattr(conv, "contenido", None):
+        # contenido ya viene como list[dict] -> {role, content}
+        conversation = [sch.AnalystMessage(**m) for m in conv.contenido]
+
+    return sch.AnalystTicketDetail(
+        id_ticket=info["id_ticket"],
+        subject=info["subject"] or "",
+        type=info["type"],
+        user=info["user"],
+        company=info["company"],
+        service=info["service"],
+        email=info["email"],
+        date=info["date"],
+        status=info["status"],
+        conversation=conversation
+    )

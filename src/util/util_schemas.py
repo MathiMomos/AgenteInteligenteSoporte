@@ -53,3 +53,36 @@ class ChatResponse(BaseModel):
     """
     response: str = Field(..., description="La respuesta generada por el agente.")
     thread_id: str = Field(..., description="El ID de la conversación para seguir el hilo.")
+
+# === Esquemas para Analista (Bandeja & Detalle) ===
+from typing import List, Optional
+
+class AnalystMessage(BaseModel):
+    role: str
+    content: str
+
+class AnalystTicketItem(BaseModel):
+    id_ticket: int
+    subject: str
+    user: Optional[str] = None
+    service: Optional[str] = None
+    status: Optional[str] = None
+    date: Optional[str] = None  # ISO o dd/mm/aaaa
+
+class AnalystTicketPage(BaseModel):
+    items: List[AnalystTicketItem]
+    total: int
+    limit: int
+    offset: int
+
+class AnalystTicketDetail(BaseModel):
+    id_ticket: int
+    subject: str
+    type: Optional[str] = None
+    user: Optional[str] = None
+    company: Optional[str] = None
+    service: Optional[str] = None
+    email: Optional[str] = None
+    date: Optional[str] = None
+    status: Optional[str] = None
+    conversation: List[AnalystMessage]
