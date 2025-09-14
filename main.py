@@ -16,10 +16,25 @@ from typing import List
 from fastapi import Query
 from src.crud import crud_tickets  # ya lo usas en otros módulos
 
+from fastapi import HTTPException, Body
+from fastapi import Security
+
 
 # --- Importaciones de Google ---
 from google.oauth2 import id_token
 from google.auth.transport import requests as grequests
+
+# Estados que vienen de la UI (front) → se traducen al valor real del ENUM en BD
+UI_TO_DB_STATUS = {
+    "abierto": "aceptado",
+    "en atención": "en atención",
+    "en atencion": "en atención",
+    "rechazado": "rechazado",
+    "cancelado": "cancelado",
+    "cerrado": "finalizado",
+}
+ALLOWED_UI_STATUS = set(UI_TO_DB_STATUS.keys())
+
 
 # --- Inicialización de la App ---
 app = FastAPI(
@@ -197,3 +212,39 @@ def detalle_conversacion_analista(
         status=info["status"],
         conversation=conversation
     )
+
+@app.put("/api/analista/tickets/{ticket_id}/status", tags=["Analista"])
+def update_ticket_status(
+    ticket_id: int,
+    payload: dict = Body(...),
+    db: Session = Depends(db_utils.get_db),
+    current_user: sch.TokenData = Depends(security.get_current_user),
+):
+    new_status_ui = (payload or {}).get("status")
+    if not isinstance(new_status_ui, str):
+        raise HTTPException(status_code=400, detail="Falta 'status'.")
+
+    new_status_norm = new_status_ui.strip().lower()
+    if new_status_norm not in ALLOWED_UI_STATUS:
+        raise HTTPException(status_code=400, detail="Estado no permitido.")
+
+    # Traducir al valor real del ENUM en BD
+    db_status = UI_TO_DB_STATUS[new_status_norm]
+
+    analyst_id = crud_tickets.get_analyst_id_for_current_user_or_default(db, current_user)
+    if not analyst_id:
+        raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
+
+    ticket = crud_tickets.get_ticket_admin_by_id(db, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado.")
+
+    if ticket.id_analista != analyst_id:
+        raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
+
+    updated = crud_tickets.update_ticket_status_db(db, ticket_id, db_status)
+    if not updated:
+        raise HTTPException(status_code=500, detail="No se pudo actualizar el estado.")
+
+    return {"ok": True, "status": updated.estado}
+

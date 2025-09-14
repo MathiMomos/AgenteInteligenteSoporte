@@ -211,3 +211,27 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
             info["service"] = getattr(servicio, "nombre", None)
 
     return info
+
+def update_ticket_status_db(db_session: Session, ticket_id: int, new_status: str):
+    """
+    Actualiza el campo 'estado' de un ticket.
+    new_status debe venir normalizado en minúsculas (ej: 'aceptado', 'en atención', 'cerrado', 'cancelado', 'rechazado').
+    """
+    ticket = db_session.query(db.Ticket).filter(db.Ticket.id_ticket == ticket_id).first()
+    if not ticket:
+        return None
+
+    # Normaliza 'en atencion' → 'en atención'
+    ns = new_status.strip().lower()
+    if ns == "en atencion":
+        ns = "en atención"
+
+    ticket.estado = ns
+    try:
+        ticket.updated_at = datetime.datetime.utcnow()
+    except Exception:
+        pass
+
+    db_session.commit()
+    db_session.refresh(ticket)
+    return ticket
