@@ -6,36 +6,37 @@ from src.util import util_base_de_datos as db
 from src.util import util_schemas as sch
 from typing import Optional
 
-
-
-def create_ticket_db(db_session: Session, asunto: str, tipo: str, user_info: sch.TokenData) -> db.Ticket:
+def create_ticket_db(
+    db_session: Session,
+    asunto: str,
+    tipo: str,
+    user_info: sch.TokenData,
+    nivel: str = "medio",   # <-- ahora parametrizable
+) -> db.Ticket:
     """
-    Crea un nuevo registro de Ticket en la base de datos.
+    Crea un nuevo Ticket. Acepta 'nivel' para guardar bajo/medio/alto.
+    Asigna por defecto al analista 'Ana Lytics' si existe.
     """
-    # Lógica de negocio para determinar el servicio contratado por el cliente.
-    # Para la demo, podemos asumir que el ticket se crea sobre el primer
-    # servicio que encontremos para la empresa del colaborador.
+    # Servicio contratado del cliente
     cliente_servicio = db_session.query(db.ClienteServicio).filter(
         db.ClienteServicio.id_cliente == user_info.cliente_id
     ).first()
-
     if not cliente_servicio:
         raise ValueError("El cliente asociado a este colaborador no tiene servicios contratados.")
 
-    # --- Asignación por defecto al analista "Ana Lytics" (búsqueda por nombre, insensible a mayúsculas) ---
+    # Asignación por defecto a 'Ana Lytics' (si existe)
     analyst_id = None
     try:
-        default_analyst = db_session.query(db.External).filter(
+        default_ext = db_session.query(db.External).filter(
             db.External.nombre.ilike("Ana Lytics")
         ).first()
-        if default_analyst and getattr(default_analyst, "persona", None):
-            analista = db_session.query(db.Analista).filter(
-                db.Analista.id_persona == default_analyst.persona.id_persona
+        if default_ext and getattr(default_ext, "persona", None):
+            ana = db_session.query(db.Analista).filter(
+                db.Analista.id_persona == default_ext.persona.id_persona
             ).first()
-            if analista:
-                analyst_id = analista.id_analista
+            if ana:
+                analyst_id = ana.id_analista
     except Exception:
-        # Si algo falla, simplemente dejamos analyst_id = None (sin romper el flujo)
         analyst_id = None
 
     new_ticket = db.Ticket(
@@ -43,9 +44,9 @@ def create_ticket_db(db_session: Session, asunto: str, tipo: str, user_info: sch
         tipo=tipo,
         id_colaborador=user_info.colaborador_id,
         id_cliente_servicio=cliente_servicio.id_cliente_servicio,
-        nivel='medio',
-        estado='aceptado',
-        id_analista=analyst_id  # <-- asignación por defecto (si se encontró)
+        nivel=(nivel or "medio"),
+        estado="aceptado",           # mapea a “Abierto” en la UI
+        id_analista=analyst_id,
     )
     db_session.add(new_ticket)
     db_session.commit()
