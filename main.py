@@ -15,7 +15,7 @@ from src.agente import agente_principal
 from src.auth import security
 from src.crud import crud_users
 from src.crud import crud_tickets            # tickets (colaborador)
-from src.crud import crud_analista           # <-- analista (nuevo módulo)
+from src.crud import crud_analista           # analista
 
 # --- Google ---
 from google.oauth2 import id_token
@@ -24,16 +24,36 @@ from google.auth.transport import requests as grequests
 # ------------------------------------------------------------------
 # Estados que llegan desde la UI → mapeo a valores del ENUM en la BD
 # ------------------------------------------------------------------
+def _norm(s: str) -> str:
+    import unicodedata
+    return "".join(
+        c for c in unicodedata.normalize("NFD", s.lower())
+        if unicodedata.category(c) != "Mn"
+    ).strip()
+
+# UI → BD (tal como llegan desde el front, con o sin acentos)
 UI_TO_DB_STATUS = {
     "abierto": "aceptado",
     "en atención": "en atención",
     "en atencion": "en atención",
-    "rechazado": "rechazado",
-    "cancelado": "cancelado",
     "cerrado": "finalizado",
+    "rechazado": "cancelado",
+    "cancelado": "cancelado",     # por si acaso
 }
-ALLOWED_UI_STATUS = set(UI_TO_DB_STATUS.keys())
 
+# Versión normalizada del mapa (CLAVE!)
+UI_TO_DB_STATUS_N = { _norm(k): v for k, v in UI_TO_DB_STATUS.items() }
+
+# Para filtros (UI → lista de estados en BD)
+STATUS_TO_DB = {
+    "abierto": ["aceptado"],
+    "en atencion": ["en atención"],
+    "cerrado": ["finalizado"],
+    "rechazado": ["cancelado"],
+}
+
+# Lo permitdo en UI (normalizado)
+ALLOWED_UI_STATUS = set(UI_TO_DB_STATUS_N.keys())
 # -------------------------
 # Inicialización de la app
 # -------------------------
@@ -173,6 +193,10 @@ def listar_conversaciones_analista(
     db: Session = Depends(db_utils.get_db),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
+    """
+    Lista paginada de tickets asignados al analista actual, con filtrado
+    por estado opcional. Hidratación masiva para evitar N+1.
+    """
     analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
     if not analyst_id:
         return sch.AnalystTicketPage(items=[], total=0, limit=limit, offset=offset)
@@ -189,19 +213,20 @@ def listar_conversaciones_analista(
         db, analyst_id, limit=limit, offset=offset, estados=estados_bd
     )
 
-    items: List[sch.AnalystTicketItem] = []
-    for t in rows:
-        info = crud_analista.hydrate_ticket_info(db, t)
-        items.append(
-            sch.AnalystTicketItem(
-                id_ticket=info["id_ticket"],
-                subject=info["subject"] or "",
-                user=info["user"],
-                service=info["service"],
-                status=info["status"],
-                date=info["date"],
-            )
+    # Hidratación en lote
+    infos = crud_analista.hydrate_ticket_page(db, rows)
+
+    items: List[sch.AnalystTicketItem] = [
+        sch.AnalystTicketItem(
+            id_ticket=info["id_ticket"],
+            subject=info["subject"] or "",
+            user=info["user"],
+            service=info["service"],
+            status=info["status"],
+            date=info["date"],
         )
+        for info in infos
+    ]
 
     return sch.AnalystTicketPage(items=items, total=total, limit=limit, offset=offset)
 
@@ -213,6 +238,7 @@ def detalle_conversacion_analista(
 ):
     """
     Devuelve el detalle del ticket y el hilo de conversación guardado.
+    (Para un solo ticket, la hidratación individual es suficiente).
     """
     t = crud_analista.get_ticket_admin_by_id(db, id_ticket)
     if not t:
@@ -249,12 +275,14 @@ def update_ticket_status(
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
     new_status_ui = (payload or {}).get("status")
-    description = (payload or {}).get("description")  # obligatorio sólo si Cerrado
+    description = (payload or {}).get("description")
 
     if not isinstance(new_status_ui, str):
         raise HTTPException(status_code=400, detail="Falta 'status'.")
 
-    new_status_norm = new_status_ui.strip().lower()
+    # usar normalización (en vez de solo lower())
+    new_status_norm = _norm(new_status_ui)
+
     if new_status_norm not in ALLOWED_UI_STATUS:
         raise HTTPException(status_code=400, detail="Estado no permitido.")
 
@@ -262,7 +290,8 @@ def update_ticket_status(
         if not isinstance(description, str) or not description.strip():
             raise HTTPException(status_code=400, detail="La descripción es obligatoria para cerrar el ticket.")
 
-    db_status = UI_TO_DB_STATUS[new_status_norm]
+    # tomar el valor ENUM real desde el mapa normalizado
+    db_status = UI_TO_DB_STATUS_N[new_status_norm]
 
     analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
     if not analyst_id:
@@ -273,7 +302,7 @@ def update_ticket_status(
         raise HTTPException(status_code=404, detail="Ticket no encontrado.")
 
     if ticket.id_analista != analyst_id:
-        raise HTTPException(statuscode=403, detail="No autorizado para modificar este ticket.")
+        raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
 
     updated = crud_analista.update_ticket_status_db(
         db_session=db,
@@ -285,17 +314,3 @@ def update_ticket_status(
         raise HTTPException(status_code=500, detail="No se pudo actualizar el estado.")
 
     return {"ok": True, "status": updated.estado}
-
-# --- helpers para normalización y mapeo de filtros ---
-def _norm(s: str) -> str:
-    return "".join(
-        c for c in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(c) != "Mn"
-    ).strip()
-
-# 🔧 Solo valores válidos del ENUM en BD para el filtro:
-STATUS_TO_DB = {
-    "abierto": ["aceptado"],
-    "en atencion": ["en atención"],
-    "cerrado": ["finalizado"],
-    "rechazado": ["cancelado"],
-}

@@ -3,6 +3,8 @@ import datetime
 from typing import Optional, List
 
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import aliased
+from sqlalchemy import select
 from src.util import util_base_de_datos as db
 from src.util import util_schemas as sch
 
@@ -33,7 +35,6 @@ def get_analyst_id_for_current_user_or_default(db_session: Session, user_info: s
     return None
 
 
-# get_tickets_by_analyst: agrega status_db y úsalo si viene
 def get_tickets_by_analyst(
     db_session: Session,
     analyst_id,
@@ -41,6 +42,10 @@ def get_tickets_by_analyst(
     offset: int = 0,
     estados: Optional[List[str]] = None,
 ):
+    """
+    Devuelve tickets asignados a un analista específico, paginados.
+    (Solo Tickets; la hidratación masiva se hace con hydrate_ticket_page para evitar N+1).
+    """
     base_q = db_session.query(db.Ticket).filter(db.Ticket.id_analista == analyst_id)
     if estados:
         base_q = base_q.filter(db.Ticket.estado.in_(estados))
@@ -66,8 +71,8 @@ def get_conversation_by_ticket(db_session: Session, ticket_id: int):
 
 def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
     """
-    Devuelve un dict con campos listos para el front del analista:
-    subject, user, email, company, service, status, date, type.
+    Hidratación para un (1) ticket — útil para la pantalla de detalle.
+    (Deja la versión original; para listas usa hydrate_ticket_page).
     """
     info = {
         "id_ticket": ticket.id_ticket,
@@ -86,19 +91,18 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
     if isinstance(created_at, (datetime.datetime, datetime.date)):
         info["date"] = created_at.strftime("%d/%m/%Y")
 
-    # Usuario (colaborador -> persona -> external.nombre/correo)
+    # Usuario (colaborador -> persona -> external.nombre/correo) y Empresa (cliente)
     colaborador = db_session.query(db.Colaborador).filter(db.Colaborador.id_colaborador == ticket.id_colaborador).first()
     if colaborador:
         external = db_session.query(db.External).filter(db.External.id_persona == colaborador.id_persona).first()
         if external:
             info["user"] = getattr(external, "nombre", None)
             info["email"] = getattr(external, "correo", None)
-        # Empresa (cliente)
         cliente = db_session.query(db.Cliente).filter(db.Cliente.id_cliente == colaborador.id_cliente).first()
         if cliente:
             info["company"] = getattr(cliente, "nombre", None)
 
-    # Servicio (cliente_servicio -> servicio)
+    # Servicio
     cs = db_session.query(db.ClienteServicio).filter(
         db.ClienteServicio.id_cliente_servicio == ticket.id_cliente_servicio
     ).first()
@@ -108,6 +112,86 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
             info["service"] = getattr(servicio, "nombre", None)
 
     return info
+
+
+# ========= NUEVO =========
+def hydrate_ticket_page(db_session: Session, tickets: List[db.Ticket]) -> List[dict]:
+    """
+    Hidratación masiva para una página de tickets (evita N+1).
+    Hace 2 queries en bloque y luego arma los dicts.
+    """
+    if not tickets:
+        return []
+
+    # --- Recolectar ids a buscar en bloque ---
+    colab_ids = {t.id_colaborador for t in tickets if getattr(t, "id_colaborador", None)}
+    cs_ids = {t.id_cliente_servicio for t in tickets if getattr(t, "id_cliente_servicio", None)}
+
+    # --- Mapa de colaborador -> (user, email, company) ---
+    # outerjoin para no perder filas si algo faltase
+    Col = db.Colaborador
+    Ext = db.External
+    Cli = db.Cliente
+
+    colab_rows = (
+        db_session.query(
+            Col.id_colaborador,
+            Ext.nombre.label("user"),
+            Ext.correo.label("email"),
+            Cli.nombre.label("company"),
+        )
+        .outerjoin(Ext, Ext.id_persona == Col.id_persona)
+        .outerjoin(Cli, Cli.id_cliente == Col.id_cliente)
+        .filter(Col.id_colaborador.in_(colab_ids)) if colab_ids else []
+    )
+    colab_map = {r.id_colaborador: {"user": r.user, "email": r.email, "company": r.company} for r in colab_rows}
+
+    # --- Mapa de cliente_servicio -> service ---
+    CS = db.ClienteServicio
+    Srv = db.Servicio
+    cs_rows = (
+        db_session.query(
+            CS.id_cliente_servicio,
+            Srv.nombre.label("service"),
+        )
+        .outerjoin(Srv, Srv.id_servicio == CS.id_servicio)
+        .filter(CS.id_cliente_servicio.in_(cs_ids)) if cs_ids else []
+    )
+    service_map = {r.id_cliente_servicio: r.service for r in cs_rows}
+
+    # --- Armar respuesta final por ticket ---
+    resp: List[dict] = []
+    for t in tickets:
+        info = {
+            "id_ticket": t.id_ticket,
+            "subject": getattr(t, "asunto", None),
+            "status": getattr(t, "estado", None),
+            "type": getattr(t, "tipo", None),
+            "date": None,
+            "user": None,
+            "email": None,
+            "company": None,
+            "service": None,
+        }
+
+        created_at = getattr(t, "created_at", None)
+        if isinstance(created_at, (datetime.datetime, datetime.date)):
+            info["date"] = created_at.strftime("%d/%m/%Y")
+
+        c = colab_map.get(getattr(t, "id_colaborador", None))
+        if c:
+            info["user"] = c.get("user")
+            info["email"] = c.get("email")
+            info["company"] = c.get("company")
+
+        svc = service_map.get(getattr(t, "id_cliente_servicio", None))
+        if svc:
+            info["service"] = svc
+
+        resp.append(info)
+
+    return resp
+# ======== FIN NUEVO ========
 
 
 def update_ticket_status_db(
