@@ -1,7 +1,8 @@
 # src/main.py
 import uuid
 import os
-from typing import List
+from typing import List, Optional
+import unicodedata
 
 from fastapi import FastAPI, Depends, HTTPException, Body, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -168,18 +169,25 @@ def root():
 def listar_conversaciones_analista(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    status: Optional[str] = Query(None, description="Abierto | En Atención | Cerrado | Rechazado | Todos"),
     db: Session = Depends(db_utils.get_db),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
-    """
-    Lista paginada de tickets asignados al analista actual.
-    Si el usuario no es analista, se usa el analista por defecto (Ana Lytics).
-    """
     analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
     if not analyst_id:
         return sch.AnalystTicketPage(items=[], total=0, limit=limit, offset=offset)
 
-    rows, total = crud_analista.get_tickets_by_analyst(db, analyst_id, limit=limit, offset=offset)
+    estados_bd = None
+    if status:
+        s = _norm(status)
+        if s != "todos":
+            if s not in STATUS_TO_DB:
+                raise HTTPException(status_code=400, detail="Estado inválido.")
+            estados_bd = STATUS_TO_DB[s]
+
+    rows, total = crud_analista.get_tickets_by_analyst(
+        db, analyst_id, limit=limit, offset=offset, estados=estados_bd
+    )
 
     items: List[sch.AnalystTicketItem] = []
     for t in rows:
@@ -265,7 +273,7 @@ def update_ticket_status(
         raise HTTPException(status_code=404, detail="Ticket no encontrado.")
 
     if ticket.id_analista != analyst_id:
-        raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
+        raise HTTPException(statuscode=403, detail="No autorizado para modificar este ticket.")
 
     updated = crud_analista.update_ticket_status_db(
         db_session=db,
@@ -277,3 +285,17 @@ def update_ticket_status(
         raise HTTPException(status_code=500, detail="No se pudo actualizar el estado.")
 
     return {"ok": True, "status": updated.estado}
+
+# --- helpers para normalización y mapeo de filtros ---
+def _norm(s: str) -> str:
+    return "".join(
+        c for c in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(c) != "Mn"
+    ).strip()
+
+# 🔧 Solo valores válidos del ENUM en BD para el filtro:
+STATUS_TO_DB = {
+    "abierto": ["aceptado"],
+    "en atencion": ["en atención"],
+    "cerrado": ["finalizado"],
+    "rechazado": ["cancelado"],
+}

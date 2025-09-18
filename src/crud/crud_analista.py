@@ -1,6 +1,6 @@
 import uuid
 import datetime
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy.orm import Session
 from src.util import util_base_de_datos as db
@@ -33,11 +33,18 @@ def get_analyst_id_for_current_user_or_default(db_session: Session, user_info: s
     return None
 
 
-def get_tickets_by_analyst(db_session: Session, analyst_id, limit: int = 20, offset: int = 0):
-    """
-    Devuelve tickets asignados a un analista específico, paginados.
-    """
+# get_tickets_by_analyst: agrega status_db y úsalo si viene
+def get_tickets_by_analyst(
+    db_session: Session,
+    analyst_id,
+    limit: int = 20,
+    offset: int = 0,
+    estados: Optional[List[str]] = None,
+):
     base_q = db_session.query(db.Ticket).filter(db.Ticket.id_analista == analyst_id)
+    if estados:
+        base_q = base_q.filter(db.Ticket.estado.in_(estados))
+
     total = base_q.count()
     rows = base_q.order_by(db.Ticket.updated_at.desc()).limit(limit).offset(offset).all()
     return rows, total
