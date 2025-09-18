@@ -13,7 +13,8 @@ from src.util import util_base_de_datos as db_utils
 from src.agente import agente_principal
 from src.auth import security
 from src.crud import crud_users
-from src.crud import crud_tickets
+from src.crud import crud_tickets            # tickets (colaborador)
+from src.crud import crud_analista           # <-- analista (nuevo módulo)
 
 # --- Google ---
 from google.oauth2 import id_token
@@ -174,15 +175,15 @@ def listar_conversaciones_analista(
     Lista paginada de tickets asignados al analista actual.
     Si el usuario no es analista, se usa el analista por defecto (Ana Lytics).
     """
-    analyst_id = crud_tickets.get_analyst_id_for_current_user_or_default(db, current_user)
+    analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
     if not analyst_id:
         return sch.AnalystTicketPage(items=[], total=0, limit=limit, offset=offset)
 
-    rows, total = crud_tickets.get_tickets_by_analyst(db, analyst_id, limit=limit, offset=offset)
+    rows, total = crud_analista.get_tickets_by_analyst(db, analyst_id, limit=limit, offset=offset)
 
     items: List[sch.AnalystTicketItem] = []
     for t in rows:
-        info = crud_tickets.hydrate_ticket_info(db, t)
+        info = crud_analista.hydrate_ticket_info(db, t)
         items.append(
             sch.AnalystTicketItem(
                 id_ticket=info["id_ticket"],
@@ -205,13 +206,13 @@ def detalle_conversacion_analista(
     """
     Devuelve el detalle del ticket y el hilo de conversación guardado.
     """
-    t = crud_tickets.get_ticket_admin_by_id(db, id_ticket)
+    t = crud_analista.get_ticket_admin_by_id(db, id_ticket)
     if not t:
         raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
-    info = crud_tickets.hydrate_ticket_info(db, t)
+    info = crud_analista.hydrate_ticket_info(db, t)
 
-    conv = crud_tickets.get_conversation_by_ticket(db, id_ticket)
+    conv = crud_analista.get_conversation_by_ticket(db, id_ticket)
     conversation = []
     if conv and getattr(conv, "contenido", None):
         conversation = [sch.AnalystMessage(**m) for m in conv.contenido]
@@ -255,18 +256,18 @@ def update_ticket_status(
 
     db_status = UI_TO_DB_STATUS[new_status_norm]
 
-    analyst_id = crud_tickets.get_analyst_id_for_current_user_or_default(db, current_user)
+    analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
     if not analyst_id:
         raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
 
-    ticket = crud_tickets.get_ticket_admin_by_id(db, ticket_id)
+    ticket = crud_analista.get_ticket_admin_by_id(db, ticket_id)
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket no encontrado.")
 
     if ticket.id_analista != analyst_id:
         raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
 
-    updated = crud_tickets.update_ticket_status_db(
+    updated = crud_analista.update_ticket_status_db(
         db_session=db,
         ticket_id=ticket_id,
         new_status=db_status,
