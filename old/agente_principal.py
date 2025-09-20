@@ -1,5 +1,3 @@
-from platform import system
-
 from langgraph.prebuilt import create_react_agent
 from src.util.util_memory import memory
 from sqlalchemy.orm import Session
@@ -7,9 +5,9 @@ from src.util.util_llm import obtener_llm
 from src.util import util_schemas as sch
 
 # Importamos nuestras herramientas y fábricas
-from src.agente.agente_creacion import get_agente_creacion_callable, crear_ticket
-from src.agente.agente_busqueda import get_agente_busqueda
-from src.agente.agente_conocimiento import agente_conocimiento
+from old.agente_creacion import get_agente_creacion_callable, crear_ticket
+from old.agente_busqueda import get_agente_busqueda
+from old.agente_conocimiento import agente_conocimiento
 
 
 def get_agent_executor(db: Session, user_info: sch.TokenData, thread_id: str):
@@ -20,7 +18,7 @@ def get_agent_executor(db: Session, user_info: sch.TokenData, thread_id: str):
 
     # Inyectamos el contexto en cada agente-herramienta
     # (creación y búsqueda necesitan db + usuario)
-    from src.agente import agente_creacion
+    from old import agente_creacion
     agente_creacion._agente_creacion_callable = get_agente_creacion_callable(db, user_info, thread_id)
 
     tools_personalizadas = [
