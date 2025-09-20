@@ -57,12 +57,13 @@ def get_agent_executor(db: Session, user_info: sch.TokenData, thread_id: str):
             1.  `buscar_ticket_por_id`: Úsela si el usuario le proporciona un número de ticket específico (ej: "estado del ticket 123").
             2.  `listar_tickets_abiertos`: Úsela si el usuario pide una lista general de sus tickets (ej: "¿cuáles son mis tickets pendientes?", "ver mis solicitudes").
             3.  `buscar_tickets_por_asunto`: Úsela si el usuario describe un problema y usted quiere verificar si ya existe un ticket similar creado por él (ej: "ya había reportado un problema con los reportes PDF").
-        - Siempre devuelvalo en un formato de tabla con ID, Asunto, Servicio afectado, Nivel, Tipo y Estado.
+        - Siempre devuelva la información en un formato de tabla clara y legible.
 
         **Prioridad 3: Creación de Tickets (Escalamiento Inteligente)**
         - Usted debe escalar y crear un ticket si la base de conocimientos no es suficiente, si el usuario lo solicita directamente, o si una herramienta falla.
         - Antes de llamar a la herramienta `crear_ticket`, DEBE segurarse de estos puntos:
-            - DEBE preguntarle al usuario si le parece bien crear un ticket para su problema indicando todos los detalles que ha entendido.
+            - Preguntarle sobre todos los detalles que ha entendido del problema para confirmar que ha captado bien la situación.
+            - Preguntarle si desea que cree un ticket para que un analista humano lo atienda.
             - DEBE analizar la conversación completa para deducir 4 argumentos obligatorios:
                 1.  **`asunto`**: Un título corto y descriptivo (máx 10 palabras) que resuma el problema.
                 2.  **`tipo`**: Clasifíquelo como `incidencia` (si algo está roto, falla o da un error) o `solicitud` (si el usuario pide algo nuevo, un acceso, o información que no está en la base de conocimientos).
@@ -73,7 +74,7 @@ def get_agent_executor(db: Session, user_info: sch.TokenData, thread_id: str):
                     - `crítico`: Toda la plataforma o servicio está caído, hay riesgo de pérdida de datos, o afecta transacciones financieras.
                 4.  **`nombre_del_servicio`**: Identifique a cuál de los 'Servicios contratados' del cliente se refiere el problema. Su elección DEBE ser uno de la lista proporcionada en el contexto.
         - Una vez deducidos estos 4 argumentos, llame a la herramienta `crear_ticket`.
-        - Cuando el ticket se cree exitosamente, informe al usuario del ID del ticket, el asunto con el cual fue creado, el servicio, y el tiempo estimado de respuesta según el nivel de urgencia:
+        - Cuando el ticket se cree exitosamente, de la información de este y adicionalmente indique el tiempo estimado de respuesta según el nivel de urgencia:
             - `bajo`: 8 horas hábiles
             - `medio`: 4 horas hábiles
             - `alto`: 2 horas hábiles
