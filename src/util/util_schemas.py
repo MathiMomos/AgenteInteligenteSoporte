@@ -1,5 +1,6 @@
 # src/util_schemas.py
 from pydantic import BaseModel, Field
+from typing import List, Optional
 import uuid
 
 ### Esquemas para Autenticación
@@ -10,6 +11,7 @@ class GoogleLoginRequest(BaseModel):
     """
     id_token: str
 
+
 class Token(BaseModel):
     """
     Define la estructura de la respuesta que nuestra API envía al frontend
@@ -17,6 +19,14 @@ class Token(BaseModel):
     """
     access_token: str
     token_type: str
+
+
+class ServicioInfo(BaseModel):
+    """
+    Una representación simple de un servicio contratado.
+    """
+    id_servicio: str
+    nombre: str
 
 
 class TokenData(BaseModel):
@@ -33,6 +43,8 @@ class TokenData(BaseModel):
     nombre: str  # Viene de la tabla External
     correo: str  # Viene de la tabla External
     cliente_nombre: str  # Viene de la tabla Cliente
+
+    servicios_contratados: List[ServicioInfo]
 
 
 ### Esquemas para el Chat
@@ -55,7 +67,6 @@ class ChatResponse(BaseModel):
     thread_id: str = Field(..., description="El ID de la conversación para seguir el hilo.")
 
 # === Esquemas para Analista (Bandeja & Detalle) ===
-from typing import List, Optional
 
 class AnalystMessage(BaseModel):
     role: str

@@ -4,15 +4,15 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.tools import tool
 from langchain_core.runnables import Runnable
 
-from src.util.util_llm import get_llm
+from src.util.util_llm import obtener_llm
 from src.util.util_agente import build_rag_prompt
-from src.util.util_base_conocimientos import get_retriever
+from src.util.util_base_conocimientos import obtener_bc
 
 def get_agente_conocimiento_chain() -> Runnable:
     """
     Construye y retorna una cadena de RAG moderna conectada al retriever.
     """
-    llm = get_llm()
+    llm = obtener_llm()
     prompt = build_rag_prompt(
         role="Agente de Conocimiento",
         instructions=(
@@ -20,7 +20,7 @@ def get_agente_conocimiento_chain() -> Runnable:
             "Si la respuesta no está en el contexto, di honestamente que no lo sabes."
         )
     )
-    retriever = get_retriever()
+    retriever = obtener_bc()
 
     question_answer_chain = create_stuff_documents_chain(llm, prompt)
     rag_chain = create_retrieval_chain(retriever, question_answer_chain)

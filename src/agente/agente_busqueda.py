@@ -3,7 +3,7 @@ from langgraph.prebuilt import create_react_agent
 from langchain.agents import tool
 from sqlalchemy.orm import Session
 from src.util import util_schemas as sch
-from src.util.util_llm import get_llm
+from src.util.util_llm import obtener_llm
 from src.crud import crud_tickets
 
 
@@ -59,7 +59,7 @@ def get_agente_busqueda(db: Session, user_info: sch.TokenData):
     ])
 
     # --- Construcción del mini-agente ---
-    llm = get_llm()
+    llm = obtener_llm()
     mini_agente = create_react_agent(model=llm, tools=tools, prompt=prompt)
 
     # --- Wrapper como tool ---

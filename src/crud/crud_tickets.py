@@ -5,24 +5,33 @@ from sqlalchemy.orm import Session
 from src.util import util_base_de_datos as db
 from src.util import util_schemas as sch
 
-
 def create_ticket_db(
     db_session: Session,
+    user_info: sch.TokenData,
     asunto: str,
     tipo: str,
-    user_info: sch.TokenData,
-    nivel: str = "medio",   # <-- ahora parametrizable
-) -> db.Ticket:
+    nivel: str,
+    nombre_servicio: str
+    ) -> db.Ticket:
     """
-    Crea un nuevo Ticket. Acepta 'nivel' para guardar bajo/medio/alto.
+    Crea un nuevo Ticket. Se asegura de tener la informacíón completa.
     Asigna por defecto al analista 'Ana Lytics' si existe.
     """
-    # Servicio contratado del cliente
-    cliente_servicio = db_session.query(db.ClienteServicio).filter(
-        db.ClienteServicio.id_cliente == user_info.cliente_id
-    ).first()
+
+    cliente_servicio = (
+        db_session.query(db.ClienteServicio)
+        .join(db.Servicio)  # Hacemos un JOIN con la tabla Servicio para poder filtrar por nombre
+        .filter(
+            db.ClienteServicio.id_cliente == user_info.cliente_id,
+            db.Servicio.nombre.ilike(f"%{nombre_servicio}%")  # Búsqueda flexible por nombre
+        )
+        .first()
+    )
+
     if not cliente_servicio:
-        raise ValueError("El cliente asociado a este colaborador no tiene servicios contratados.")
+        # Si la IA infiere un servicio que el cliente no tiene, lanzamos un error claro.
+        raise ValueError(
+            f"No se pudo encontrar el servicio '{nombre_servicio}' entre los servicios contratados por el cliente.")
 
     # Asignación por defecto a 'Ana Lytics' (si existe)
     analyst_id = None
@@ -44,8 +53,8 @@ def create_ticket_db(
         tipo=tipo,
         id_colaborador=user_info.colaborador_id,
         id_cliente_servicio=cliente_servicio.id_cliente_servicio,
-        nivel=(nivel or "medio"),
-        estado="aceptado",           # mapea a “Abierto” en la UI
+        nivel=nivel,
+        estado="aceptado",
         id_analista=analyst_id,
     )
     db_session.add(new_ticket)

@@ -1,7 +1,7 @@
 from langchain_community.retrievers.azure_ai_search import AzureAISearchRetriever
 from src.util import util_env as key
 
-def get_retriever() -> AzureAISearchRetriever:
+def obtener_bc() -> AzureAISearchRetriever:
     """
     Devuelve un retriever usando Azure AI Search (AzureAISearchRetriever).
     """

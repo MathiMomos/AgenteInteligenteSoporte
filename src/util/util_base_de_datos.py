@@ -59,7 +59,7 @@ except Exception as e:
 
 
 # --- 3. PROVEEDOR DE SESIONES ---
-def get_db():
+def obtener_bd():
     """
     Esta es la función clave que usarán nuestros endpoints.
 

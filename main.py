@@ -8,14 +8,15 @@ from fastapi import FastAPI, Depends, HTTPException, Body, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
+from src.agente import agente_principal
+
 # --- Módulos del proyecto ---
 from src.util import util_schemas as sch
 from src.util import util_base_de_datos as db_utils
-from src.agente import agente_principal
 from src.auth import security
 from src.crud import crud_users
-from src.crud import crud_tickets            # tickets (colaborador)
-from src.crud import crud_analista           # analista
+from src.crud import crud_tickets
+from src.crud import crud_analista
 
 # --- Google ---
 from google.oauth2 import id_token
@@ -38,7 +39,7 @@ UI_TO_DB_STATUS = {
     "en atencion": "en atención",
     "cerrado": "finalizado",
     "rechazado": "cancelado",
-    "cancelado": "cancelado",     # por si acaso
+    "cancelado": "cancelado",
 }
 
 # Versión normalizada del mapa (CLAVE!)
@@ -78,7 +79,7 @@ app.add_middleware(
 @app.post("/api/auth/google/login", response_model=sch.Token, tags=["Auth"])
 async def google_login(
     request: sch.GoogleLoginRequest,
-    db: Session = Depends(db_utils.get_db),
+    db: Session = Depends(db_utils.obtener_bd),
 ):
     google_client_id = os.getenv("GOOGLE_CLIENT_ID")
     if not google_client_id:
@@ -122,6 +123,19 @@ async def google_login(
             .filter(db_utils.Cliente.id_cliente == colaborador.id_cliente)
             .first()
         )
+
+        servicios_contratados_db = (
+            db.query(db_utils.Servicio)
+            .join(db_utils.ClienteServicio)
+            .filter(db_utils.ClienteServicio.id_cliente == colaborador.id_cliente)
+            .all()
+        )
+
+        servicios_para_token = [
+            sch.ServicioInfo(id_servicio=str(s.id_servicio), nombre=s.nombre)
+            for s in servicios_contratados_db
+        ]
+
         token_data_payload = sch.TokenData(
             correo=external_info.correo,
             nombre=external_info.nombre,
@@ -129,6 +143,7 @@ async def google_login(
             colaborador_id=str(colaborador.id_colaborador),
             cliente_id=str(colaborador.id_cliente),
             cliente_nombre=cliente.nombre if cliente else "Cliente Desconocido",
+            servicios_contratados=servicios_para_token
         )
         access_token = security.create_access_token(data=token_data_payload)
         return {"access_token": access_token, "token_type": "bearer"}
@@ -163,7 +178,7 @@ async def google_login(
 @app.post("/api/chat", response_model=sch.ChatResponse, tags=["Chatbot"])
 async def chat_with_agent(
     request: sch.ChatRequest,
-    db: Session = Depends(db_utils.get_db),
+    db: Session = Depends(db_utils.obtener_bd),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
     thread_id = request.thread_id or str(uuid.uuid4())
@@ -190,7 +205,7 @@ def listar_conversaciones_analista(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     status: Optional[str] = Query(None, description="Abierto | En Atención | Cerrado | Rechazado | Todos"),
-    db: Session = Depends(db_utils.get_db),
+    db: Session = Depends(db_utils.obtener_bd),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
     """
@@ -233,7 +248,7 @@ def listar_conversaciones_analista(
 @app.get("/api/analista/conversaciones/{id_ticket}", response_model=sch.AnalystTicketDetail, tags=["Analista"])
 def detalle_conversacion_analista(
     id_ticket: int,
-    db: Session = Depends(db_utils.get_db),
+    db: Session = Depends(db_utils.obtener_bd),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
     """
@@ -271,7 +286,7 @@ def detalle_conversacion_analista(
 def update_ticket_status(
     ticket_id: int,
     payload: dict = Body(...),
-    db: Session = Depends(db_utils.get_db),
+    db: Session = Depends(db_utils.obtener_bd),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
     new_status_ui = (payload or {}).get("status")
