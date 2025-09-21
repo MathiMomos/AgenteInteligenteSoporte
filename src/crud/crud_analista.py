@@ -5,6 +5,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import aliased
 from sqlalchemy import select
+from sqlalchemy import func
 from src.util import util_base_de_datos as db
 from src.util import util_schemas as sch
 
@@ -224,3 +225,39 @@ def update_ticket_status_db(
     db_session.commit()
     db_session.refresh(ticket)
     return ticket
+
+def find_random_higher_level_analyst(db_session: Session, current_analyst_id: str):
+    """
+    Busca un analista aleatorio de un nivel superior al actual.
+    """
+    # 1. Obtener el nivel del analista actual
+    current_analyst = db_session.query(db.Analista).filter(
+        db.Analista.id_analista == current_analyst_id
+    ).first()
+
+    if not current_analyst:
+        return None
+
+    # 2. Pedir a la base de datos que busque candidatos de nivel superior,
+    # los ordene aleatoriamente y nos dé el primero que encuentre.
+    return db_session.query(db.Analista).filter(
+        db.Analista.nivel > current_analyst.nivel
+    ).order_by(func.random()).first()
+
+
+# En src/crud/crud_analista.py
+
+def get_analyst_from_token(db_session: Session, current_user: sch.TokenData) -> db.Analista | None:
+    """
+    Busca y devuelve el objeto Analista completo a partir de la información
+    del token del usuario actual.
+    """
+    if not current_user.persona_id:
+        return None
+
+    # Buscamos en la tabla Analista usando el id_persona que está en el token
+    analyst = db_session.query(db.Analista).filter(
+        db.Analista.id_persona == current_user.persona_id
+    ).first()
+
+    return analyst

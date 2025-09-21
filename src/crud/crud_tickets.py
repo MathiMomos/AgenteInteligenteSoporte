@@ -126,3 +126,10 @@ def get_tickets_by_subject(db_session: Session, subject: str, user_info: sch.Tok
         db.Ticket.id_colaborador == colaborador_uuid,
         db.Ticket.asunto.ilike(f"%{subject}%")
     ).all()
+
+# ... (resto de tus funciones CRUD de tickets)
+
+def reassign_ticket_db(db_session: Session, ticket: db.Ticket, new_analyst_id: str) -> db.Ticket:
+    """Actualiza el id_analista de un ticket existente."""
+    ticket.id_analista = new_analyst_id
+    return ticket

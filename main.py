@@ -17,6 +17,7 @@ from src.auth import security
 from src.crud import crud_users
 from src.crud import crud_tickets
 from src.crud import crud_analista
+from src.crud import crud_escalados
 
 # --- Google ---
 from google.oauth2 import id_token
@@ -330,3 +331,68 @@ def update_ticket_status(
         raise HTTPException(status_code=500, detail="No se pudo actualizar el estado.")
 
     return {"ok": True, "status": updated.estado}
+
+
+# ... (asegúrate de tener estas importaciones al principio del archivo)
+from src.crud import crud_escalados
+
+
+# ... (dentro de la sección de Rutas para Analista)
+@app.put("/api/analista/tickets/{ticket_id}/derivar", response_model=sch.AnalystTicketDetail, tags=["Analista"])
+def derivar_ticket(
+        ticket_id: int,
+        payload: sch.DerivarTicketRequest,
+        db: Session = Depends(db_utils.get_db),
+        current_user: sch.TokenData = Depends(security.get_current_user),
+):
+    """
+    Deriva un ticket a un analista aleatorio de nivel superior,
+    registrando el motivo del escalado.
+    """
+    # 1. Obtenemos el objeto completo del analista actual USANDO LA NUEVA FUNCIÓN
+    current_analyst = crud_analista.get_analyst_from_token(db, current_user)
+    if not current_analyst:
+        raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
+
+    # 2. Aplicamos la regla de negocio para el nivel 3
+    if current_analyst.nivel >= 3:
+        raise HTTPException(
+            status_code=403,
+            detail="Acción no permitida. Los analistas de nivel 3 son el último nivel de escalado."
+        )
+
+    # 3. Verificar que el ticket exista y esté asignado al analista actual
+    ticket = crud_analista.get_ticket_admin_by_id(db, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado.")
+    # Comparamos el ID del analista del ticket con el ID del objeto que obtuvimos
+    if ticket.id_analista != current_analyst.id_analista:
+        raise HTTPException(status_code=403,
+                            detail="No está autorizado para derivar un ticket que no está asignado a usted.")
+
+    # 4. Encontrar un nuevo analista (la lógica no cambia)
+    new_analyst = crud_analista.find_random_higher_level_analyst(db, current_analyst.id_analista)
+    if not new_analyst:
+        raise HTTPException(status_code=409, detail="No se encontraron analistas de nivel superior disponibles.")
+
+    crud_tickets.reassign_ticket_db(db, ticket, new_analyst.id_analista)
+
+    crud_escalados.log_escalation_db(
+        db_session=db,
+        ticket_id=ticket_id,
+        solicitante_id=current_analyst.id_analista,
+        derivado_id=new_analyst.id_analista,
+        motivo=payload.motivo,
+    )
+
+    db.commit()
+    db.refresh(ticket)
+
+    print(
+        f"Ticket #{ticket_id} derivado por {current_user.nombre} a {new_analyst.id_analista} por motivo: {payload.motivo}")
+
+    info = crud_analista.hydrate_ticket_info(db, ticket)
+    conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
+    conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
+
+    return sch.AnalystTicketDetail(**info, conversation=conversation)

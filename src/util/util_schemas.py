@@ -97,3 +97,8 @@ class AnalystTicketDetail(BaseModel):
     date: Optional[str] = None
     status: Optional[str] = None
     conversation: List[AnalystMessage]
+
+# En src/util/util_schemas.py
+
+class DerivarTicketRequest(BaseModel):
+    motivo: str = Field(..., min_length=10, description="El motivo por el cual se deriva el ticket.")
