@@ -162,6 +162,7 @@ async def google_login(
             colaborador_id="00000000-0000-0000-0000-000000000000",
             cliente_id="00000000-0000-0000-0000-000000000000",
             cliente_nombre="ANALYTICS",
+            servicios_contratados=[]
         )
         access_token = security.create_access_token(data=token_data_payload)
         return {"access_token": access_token, "token_type": "bearer"}
