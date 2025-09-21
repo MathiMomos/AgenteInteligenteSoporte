@@ -18,6 +18,13 @@ class ToolBusqueda:
             nombre_servicio = ticket.cliente_servicio.servicio.nombre
         except Exception:
             nombre_servicio = "No disponible"
+        
+        fecha_creacion = "-"
+        if hasattr(ticket, "created_at") and ticket.created_at:
+            try:
+                fecha_creacion = ticket.created_at.strftime("%d/%m/%Y")
+            except Exception:
+                fecha_creacion = "-"
 
         details = (
             f"  - **ID:** #{ticket.id_ticket}\n"
@@ -26,6 +33,7 @@ class ToolBusqueda:
             f"  - **Nivel:** {ticket.nivel}\n"
             f"  - **Tipo:** {ticket.tipo}\n"
             f"  - **Estado:** {ticket.estado}"
+            f"  - **Fecha de Creación:** {fecha_creacion}"
         )
         return details
 
