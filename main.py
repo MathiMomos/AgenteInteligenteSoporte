@@ -342,7 +342,7 @@ from src.crud import crud_escalados
 def derivar_ticket(
         ticket_id: int,
         payload: sch.DerivarTicketRequest,
-        db: Session = Depends(db_utils.get_db),
+        db: Session = Depends(db_utils.obtener_bd),
         current_user: sch.TokenData = Depends(security.get_current_user),
 ):
     """
