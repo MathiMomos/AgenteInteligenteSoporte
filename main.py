@@ -284,32 +284,13 @@ def detalle_conversacion_analista(
 # -------------------------
 # Cambiar estado de ticket
 # -------------------------
-@app.put("/api/analista/tickets/{ticket_id}/status", tags=["Analista"])
+@app.put("/api/analista/tickets/{ticket_id}/status", response_model=sch.AnalystTicketDetail, tags=["Analista"])
 def update_ticket_status(
-    ticket_id: int,
-    payload: dict = Body(...),
-    db: Session = Depends(db_utils.obtener_bd),
-    current_user: sch.TokenData = Depends(security.get_current_user),
+        ticket_id: int,
+        payload: sch.UpdateTicketStatusRequest,  # <-- Usaremos un schema para más seguridad y claridad
+        db: Session = Depends(db_utils.obtener_bd),
+        current_user: sch.TokenData = Depends(security.get_current_user),
 ):
-    new_status_ui = (payload or {}).get("status")
-    description = (payload or {}).get("description")
-
-    if not isinstance(new_status_ui, str):
-        raise HTTPException(status_code=400, detail="Falta 'status'.")
-
-    # usar normalización (en vez de solo lower())
-    new_status_norm = _norm(new_status_ui)
-
-    if new_status_norm not in ALLOWED_UI_STATUS:
-        raise HTTPException(status_code=400, detail="Estado no permitido.")
-
-    if new_status_norm == "cerrado":
-        if not isinstance(description, str) or not description.strip():
-            raise HTTPException(status_code=400, detail="La descripción es obligatoria para cerrar el ticket.")
-
-    # tomar el valor ENUM real desde el mapa normalizado
-    db_status = UI_TO_DB_STATUS_N[new_status_norm]
-
     analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
     if not analyst_id:
         raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
@@ -321,20 +302,27 @@ def update_ticket_status(
     if ticket.id_analista != analyst_id:
         raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
 
-    updated = crud_analista.update_ticket_status_db(
+    db_status = UI_TO_DB_STATUS_N.get(_norm(payload.status))
+    if not db_status:
+        raise HTTPException(status_code=400, detail="Estado no permitido.")
+
+    updated_ticket = crud_analista.update_ticket_status_db(
         db_session=db,
         ticket_id=ticket_id,
         new_status=db_status,
-        description=(description or "").strip() if new_status_norm == "cerrado" else None,
+        description=payload.description if db_status == "finalizado" else None,
     )
-    if not updated:
+    if not updated_ticket:
         raise HTTPException(status_code=500, detail="No se pudo actualizar el estado.")
 
-    return {"ok": True, "status": updated.estado}
+    # --- LA CORRECCIÓN CLAVE ---
+    # Ahora, en lugar de un simple "ok", devolvemos el ticket completo e "hidratado"
 
+    info = crud_analista.hydrate_ticket_info(db, updated_ticket)
+    conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
+    conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
 
-# ... (asegúrate de tener estas importaciones al principio del archivo)
-from src.crud import crud_escalados
+    return sch.AnalystTicketDetail(**info, conversation=conversation)
 
 
 # ... (dentro de la sección de Rutas para Analista)

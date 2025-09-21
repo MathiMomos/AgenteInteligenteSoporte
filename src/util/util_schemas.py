@@ -2,6 +2,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
+import datetime
 
 ### Esquemas para Autenticación
 
@@ -79,6 +80,7 @@ class AnalystTicketItem(BaseModel):
     service: Optional[str] = None
     status: Optional[str] = None
     date: Optional[str] = None  # ISO o dd/mm/aaaa
+    updated_at: Optional[datetime.datetime] = None
 
 class AnalystTicketPage(BaseModel):
     items: List[AnalystTicketItem]
@@ -97,8 +99,14 @@ class AnalystTicketDetail(BaseModel):
     date: Optional[str] = None
     status: Optional[str] = None
     conversation: List[AnalystMessage]
+    updated_at: Optional[datetime.datetime] = Field(None, description="Fecha de la última actualización del ticket")
 
 # En src/util/util_schemas.py
 
 class DerivarTicketRequest(BaseModel):
     motivo: str = Field(..., min_length=10, description="El motivo por el cual se deriva el ticket.")
+
+# En src/util/util_schemas.py
+class UpdateTicketStatusRequest(BaseModel):
+    status: str
+    description: Optional[str] = None
