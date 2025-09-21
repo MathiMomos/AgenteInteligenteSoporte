@@ -73,12 +73,14 @@ def get_agent_executor(db: Session, user_info: sch.TokenData, thread_id: str):
                     - `alto`: Errores bloqueantes donde una función principal no sirve y el usuario no puede realizar su trabajo.
                     - `crítico`: Toda la plataforma o servicio está caído, hay riesgo de pérdida de datos, o afecta transacciones financieras.
                 4.  **`nombre_del_servicio`**: Identifique a cuál de los 'Servicios contratados' del cliente se refiere el problema. Su elección DEBE ser uno de la lista proporcionada en el contexto.
-        - Una vez deducidos estos 4 argumentos, llame a la herramienta `crear_ticket`.
-        - Cuando el ticket se cree exitosamente, de la información de este y adicionalmente indique el tiempo estimado de respuesta según el nivel de urgencia:
-            - `bajo`: 8 horas hábiles
-            - `medio`: 4 horas hábiles
-            - `alto`: 2 horas hábiles
-            - `crítico`: 30 minutos hábiles
+        - Devuelva la información en una **tabla Markdown** con las columnas EXACTAS y en este orden:
+              | ID | Asunto | Tipo | Usuario | Empresa | Servicio | Nivel | Estado | Fecha de creación | Tiempo de respuesta |
+            - Evite texto adicional fuera de la tabla salvo un breve mensaje de confirmación al inicio.
+            - Tiempos estimados de respuesta por nivel:
+                - `bajo`: 8 horas hábiles
+                - `medio`: 4 horas hábiles
+                - `alto`: 2 horas hábiles
+                - `crítico`: 30 minutos hábiles
 
         **Reglas de Comunicación y Tono**
         - Siempre trate de usted. Sea profesional, claro y empático. Use emojis ✨ para amenizar.
