@@ -279,6 +279,7 @@ def detalle_conversacion_analista(
         date=info["date"],
         status=info["status"],
         conversation=conversation,
+        updated_at=info["updated_at"],
     )
 
 # -------------------------
@@ -322,7 +323,7 @@ def update_ticket_status(
     conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
     conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
 
-    return sch.AnalystTicketDetail(**info, conversation=conversation)
+    return sch.AnalystTicketDetail(**info, conversation=conversation, updated_at=info["updated_at"])
 
 
 # ... (dentro de la sección de Rutas para Analista)
