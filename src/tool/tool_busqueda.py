@@ -35,6 +35,10 @@ class ToolBusqueda:
             f"  - **Estado:** {ticket.estado}"
             f"  - **Fecha de Creación:** {fecha_creacion}"
         )
+
+        if ticket.estado == 'finalizado' and ticket.diagnostico:
+            details += f"\n  - **Diagnóstico:** {ticket.diagnostico}"
+
         return details
 
     def get_tools(self) -> list:

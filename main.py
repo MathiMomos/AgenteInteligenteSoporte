@@ -266,21 +266,9 @@ def detalle_conversacion_analista(
     conv = crud_analista.get_conversation_by_ticket(db, id_ticket)
     conversation = []
     if conv and getattr(conv, "contenido", None):
-        conversation = [sch.AnalystMessage(**m) for m in conv.contenido]
+        conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
 
-    return sch.AnalystTicketDetail(
-        id_ticket=info["id_ticket"],
-        subject=info["subject"] or "",
-        type=info["type"],
-        user=info["user"],
-        company=info["company"],
-        service=info["service"],
-        email=info["email"],
-        date=info["date"],
-        status=info["status"],
-        conversation=conversation,
-        updated_at=info["updated_at"],
-    )
+    return sch.AnalystTicketDetail(**info, conversation=conversation)
 
 # -------------------------
 # Cambiar estado de ticket
@@ -323,7 +311,7 @@ def update_ticket_status(
     conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
     conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
 
-    return sch.AnalystTicketDetail(**info, conversation=conversation, updated_at=info["updated_at"])
+    return sch.AnalystTicketDetail(**info, conversation=conversation)
 
 
 # ... (dentro de la sección de Rutas para Analista)
