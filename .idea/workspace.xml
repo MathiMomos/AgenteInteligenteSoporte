@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V4.2&#10;AHORA SI TERMINADO FALTA ASEGURAR CONEXION CON FRONTEND&#10;SE AÑADIO FECHA DE ACTUALIZACION">
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V4.3&#10;&#10;FINAL">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tool/tool_busqueda.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tool/tool_busqueda.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -192,7 +190,7 @@
       <workItem from="1758347104699" duration="5004000" />
       <workItem from="1758353715720" duration="609000" />
       <workItem from="1758385308254" duration="15106000" />
-      <workItem from="1758476377493" duration="15108000" />
+      <workItem from="1758476377493" duration="15868000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -322,7 +320,15 @@
       <option name="project" value="LOCAL" />
       <updated>1758499091460</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="AGENTE INTELIGENTE V4.3&#10;&#10;FINAL">
+      <option name="closed" value="true" />
+      <created>1758506997889</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1758506997889</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -355,12 +361,13 @@
     <MESSAGE value="AGENTE INTELIGENTE V3.2&#10;RESPUESTAS MAS COMPLETAS" />
     <MESSAGE value="AGENTE INTELIGENTE V4.0&#10;TERMINADO FALTA TESTEAR" />
     <MESSAGE value="AGENTE INTELIGENTE V4.2&#10;AHORA SI TERMINADO FALTA ASEGURAR CONEXION CON FRONTEND&#10;SE AÑADIO FECHA DE ACTUALIZACION" />
-    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V4.2&#10;AHORA SI TERMINADO FALTA ASEGURAR CONEXION CON FRONTEND&#10;SE AÑADIO FECHA DE ACTUALIZACION" />
+    <MESSAGE value="AGENTE INTELIGENTE V4.3&#10;&#10;FINAL" />
+    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V4.3&#10;&#10;FINAL" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$orquestacion_agente_inteligente.coverage" NAME="orquestacion_agente_inteligente Coverage Results" MODIFIED="1757151758716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/orquestacion" />
-    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1758505548048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1758507377265" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test.coverage" NAME="test Coverage Results" MODIFIED="1757151574330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
