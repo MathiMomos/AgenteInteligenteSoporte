@@ -56,9 +56,15 @@ STATUS_TO_DB = {
 
 # Lo permitdo en UI (normalizado)
 ALLOWED_UI_STATUS = set(UI_TO_DB_STATUS_N.keys())
-# -------------------------
-# Inicialización de la app
-# -------------------------
+UI_TO_DB_LEVEL = {
+    "bajo": "bajo",
+    "medio": "medio",
+    "alto": "alto",
+    "critico": "crítico",
+    "crítico": "crítico",
+}
+UI_TO_DB_LEVEL_N = { _norm(k): v for k, v in UI_TO_DB_LEVEL.items() }
+ALLOWED_UI_LEVELS = set(UI_TO_DB_LEVEL_N.keys())
 app = FastAPI(
     title="API de Agente Inteligente de Soporte",
     version="1.0.0",
@@ -369,6 +375,48 @@ def derivar_ticket(
         f"Ticket #{ticket_id} derivado por {current_user.nombre} a {new_analyst.id_analista} por motivo: {payload.motivo}")
 
     info = crud_analista.hydrate_ticket_info(db, ticket)
+    conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
+    conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
+
+    return sch.AnalystTicketDetail(**info, conversation=conversation)
+
+@app.put("/api/analista/tickets/{ticket_id}/nivel", response_model=sch.AnalystTicketDetail, tags=["Analista"])
+def update_ticket_level(
+        ticket_id: int,
+        payload: sch.UpdateTicketLevelRequest,
+        db: Session = Depends(db_utils.obtener_bd),
+        current_user: sch.TokenData = Depends(security.get_current_user),
+):
+    # 1) Validar que sea analista (o usar default "Ana Lytics") como ya haces
+    analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
+    if not analyst_id:
+        raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
+
+    # 2) Traer ticket
+    ticket = crud_analista.get_ticket_admin_by_id(db, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado.")
+
+    # 3) Debe estar asignado a este analista
+    if ticket.id_analista != analyst_id:
+        raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
+
+    # 4) Normalizar y validar nivel
+    db_level = UI_TO_DB_LEVEL_N.get(_norm(payload.level))
+    if not db_level:
+        raise HTTPException(status_code=400, detail="Nivel no permitido. Use: Bajo, Medio, Alto o Crítico.")
+
+    # 5) Actualizar en BD
+    updated_ticket = crud_analista.update_ticket_level_db(
+        db_session=db,
+        ticket_id=ticket_id,
+        new_level=db_level,
+    )
+    if not updated_ticket:
+        raise HTTPException(status_code=500, detail="No se pudo actualizar el nivel.")
+
+    # 6) Responder con el detalle hidratado (igual que en /status)
+    info = crud_analista.hydrate_ticket_info(db, updated_ticket)
     conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
     conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
 

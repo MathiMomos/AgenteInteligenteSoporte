@@ -263,3 +263,25 @@ def get_analyst_from_token(db_session: Session, current_user: sch.TokenData) -> 
     ).first()
 
     return analyst
+def update_ticket_level_db(
+    db_session: Session,
+    ticket_id: int,
+    new_level: str,
+):
+    """
+    Actualiza el nivel (prioridad) de un ticket.
+    """
+    ticket = (
+        db_session.query(db.Ticket)
+        .filter(db.Ticket.id_ticket == ticket_id)
+        .first()
+    )
+    if not ticket:
+        return None
+
+    ticket.nivel = new_level
+    ticket.updated_at = datetime.datetime.utcnow()
+
+    db_session.commit()
+    db_session.refresh(ticket)
+    return ticket

@@ -110,3 +110,6 @@ class DerivarTicketRequest(BaseModel):
 class UpdateTicketStatusRequest(BaseModel):
     status: str
     description: Optional[str] = None
+
+class UpdateTicketLevelRequest(BaseModel):
+    level: str
