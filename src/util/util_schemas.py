@@ -100,6 +100,7 @@ class AnalystTicketDetail(BaseModel):
     status: Optional[str] = None
     conversation: List[AnalystMessage]
     updated_at: Optional[datetime.datetime] = Field(None, description="Fecha de la última actualización del ticket")
+    level: Optional[str] = None
 
 # En src/util/util_schemas.py
 
@@ -110,6 +111,4 @@ class DerivarTicketRequest(BaseModel):
 class UpdateTicketStatusRequest(BaseModel):
     status: str
     description: Optional[str] = None
-
-class UpdateTicketLevelRequest(BaseModel):
-    level: str
+    level: Optional[str] = None

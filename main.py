@@ -216,10 +216,6 @@ def listar_conversaciones_analista(
     db: Session = Depends(db_utils.obtener_bd),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
-    """
-    Lista paginada de tickets asignados al analista actual, con filtrado
-    por estado opcional. Hidratación masiva para evitar N+1.
-    """
     analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
     if not analyst_id:
         return sch.AnalystTicketPage(items=[], total=0, limit=limit, offset=offset)
@@ -236,7 +232,6 @@ def listar_conversaciones_analista(
         db, analyst_id, limit=limit, offset=offset, estados=estados_bd
     )
 
-    # Hidratación en lote
     infos = crud_analista.hydrate_ticket_page(db, rows)
 
     items: List[sch.AnalystTicketItem] = [
@@ -259,10 +254,6 @@ def detalle_conversacion_analista(
     db: Session = Depends(db_utils.obtener_bd),
     current_user: sch.TokenData = Depends(security.get_current_user),
 ):
-    """
-    Devuelve el detalle del ticket y el hilo de conversación guardado.
-    (Para un solo ticket, la hidratación individual es suficiente).
-    """
     t = crud_analista.get_ticket_admin_by_id(db, id_ticket)
     if not t:
         raise HTTPException(status_code=404, detail="Ticket no encontrado")
@@ -277,12 +268,16 @@ def detalle_conversacion_analista(
     return sch.AnalystTicketDetail(**info, conversation=conversation)
 
 # -------------------------
-# Cambiar estado de ticket
+# Cambiar estado y nivel de ticket
 # -------------------------
+
+# =======================================================================
+# FUNCIÓN AÑADIDA PARA CORREGIR EL ERROR
+# =======================================================================
 @app.put("/api/analista/tickets/{ticket_id}/status", response_model=sch.AnalystTicketDetail, tags=["Analista"])
 def update_ticket_status(
         ticket_id: int,
-        payload: sch.UpdateTicketStatusRequest,  # <-- Usaremos un schema para más seguridad y claridad
+        payload: sch.UpdateTicketStatusRequest,  # status obligatorio; description/level opcionales
         db: Session = Depends(db_utils.obtener_bd),
         current_user: sch.TokenData = Depends(security.get_current_user),
 ):
@@ -297,10 +292,10 @@ def update_ticket_status(
     if ticket.id_analista != analyst_id:
         raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
 
+    # 1) Actualizar ESTADO
     db_status = UI_TO_DB_STATUS_N.get(_norm(payload.status))
     if not db_status:
         raise HTTPException(status_code=400, detail="Estado no permitido.")
-
     updated_ticket = crud_analista.update_ticket_status_db(
         db_session=db,
         ticket_id=ticket_id,
@@ -310,17 +305,27 @@ def update_ticket_status(
     if not updated_ticket:
         raise HTTPException(status_code=500, detail="No se pudo actualizar el estado.")
 
-    # --- LA CORRECCIÓN CLAVE ---
-    # Ahora, en lugar de un simple "ok", devolvemos el ticket completo e "hidratado"
+    # 2) (Opcional) Actualizar NIVEL si vino en el payload
+    if payload.level:
+        db_level = UI_TO_DB_LEVEL_N.get(_norm(payload.level))
+        if not db_level:
+            raise HTTPException(status_code=400, detail="Nivel no permitido. Use: Bajo, Medio, Alto o Crítico.")
+        updated_ticket = crud_analista.update_ticket_level_db(
+            db_session=db,
+            ticket_id=ticket_id,
+            new_level=db_level,
+        )
+        if not updated_ticket:
+            raise HTTPException(status_code=500, detail="No se pudo actualizar el nivel.")
 
+    # 3) Responder hidratado
     info = crud_analista.hydrate_ticket_info(db, updated_ticket)
     conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
     conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
-
     return sch.AnalystTicketDetail(**info, conversation=conversation)
 
+# =======================================================================
 
-# ... (dentro de la sección de Rutas para Analista)
 @app.put("/api/analista/tickets/{ticket_id}/derivar", response_model=sch.AnalystTicketDetail, tags=["Analista"])
 def derivar_ticket(
         ticket_id: int,
@@ -328,32 +333,23 @@ def derivar_ticket(
         db: Session = Depends(db_utils.obtener_bd),
         current_user: sch.TokenData = Depends(security.get_current_user),
 ):
-    """
-    Deriva un ticket a un analista aleatorio de nivel superior,
-    registrando el motivo del escalado.
-    """
-    # 1. Obtenemos el objeto completo del analista actual USANDO LA NUEVA FUNCIÓN
     current_analyst = crud_analista.get_analyst_from_token(db, current_user)
     if not current_analyst:
         raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
 
-    # 2. Aplicamos la regla de negocio para el nivel 3
     if current_analyst.nivel >= 3:
         raise HTTPException(
             status_code=403,
             detail="Acción no permitida. Los analistas de nivel 3 son el último nivel de escalado."
         )
 
-    # 3. Verificar que el ticket exista y esté asignado al analista actual
     ticket = crud_analista.get_ticket_admin_by_id(db, ticket_id)
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket no encontrado.")
-    # Comparamos el ID del analista del ticket con el ID del objeto que obtuvimos
     if ticket.id_analista != current_analyst.id_analista:
         raise HTTPException(status_code=403,
                             detail="No está autorizado para derivar un ticket que no está asignado a usted.")
 
-    # 4. Encontrar un nuevo analista (la lógica no cambia)
     new_analyst = crud_analista.find_random_higher_level_analyst(db, current_analyst.id_analista)
     if not new_analyst:
         raise HTTPException(status_code=409, detail="No se encontraron analistas de nivel superior disponibles.")
@@ -375,48 +371,6 @@ def derivar_ticket(
         f"Ticket #{ticket_id} derivado por {current_user.nombre} a {new_analyst.id_analista} por motivo: {payload.motivo}")
 
     info = crud_analista.hydrate_ticket_info(db, ticket)
-    conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
-    conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
-
-    return sch.AnalystTicketDetail(**info, conversation=conversation)
-
-@app.put("/api/analista/tickets/{ticket_id}/nivel", response_model=sch.AnalystTicketDetail, tags=["Analista"])
-def update_ticket_level(
-        ticket_id: int,
-        payload: sch.UpdateTicketLevelRequest,
-        db: Session = Depends(db_utils.obtener_bd),
-        current_user: sch.TokenData = Depends(security.get_current_user),
-):
-    # 1) Validar que sea analista (o usar default "Ana Lytics") como ya haces
-    analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
-    if not analyst_id:
-        raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
-
-    # 2) Traer ticket
-    ticket = crud_analista.get_ticket_admin_by_id(db, ticket_id)
-    if not ticket:
-        raise HTTPException(status_code=404, detail="Ticket no encontrado.")
-
-    # 3) Debe estar asignado a este analista
-    if ticket.id_analista != analyst_id:
-        raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
-
-    # 4) Normalizar y validar nivel
-    db_level = UI_TO_DB_LEVEL_N.get(_norm(payload.level))
-    if not db_level:
-        raise HTTPException(status_code=400, detail="Nivel no permitido. Use: Bajo, Medio, Alto o Crítico.")
-
-    # 5) Actualizar en BD
-    updated_ticket = crud_analista.update_ticket_level_db(
-        db_session=db,
-        ticket_id=ticket_id,
-        new_level=db_level,
-    )
-    if not updated_ticket:
-        raise HTTPException(status_code=500, detail="No se pudo actualizar el nivel.")
-
-    # 6) Responder con el detalle hidratado (igual que en /status)
-    info = crud_analista.hydrate_ticket_info(db, updated_ticket)
     conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
     conversation = [sch.AnalystMessage(**m) for m in conv.contenido] if conv and conv.contenido else []
 

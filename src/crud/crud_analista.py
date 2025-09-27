@@ -86,6 +86,7 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
         "email": None,
         "company": None,
         "service": None,
+        "level": getattr(ticket, "nivel", None),  # <- nuevo
     }
 
     # Fecha (created_at)
@@ -279,6 +280,7 @@ def update_ticket_level_db(
     if not ticket:
         return None
 
+    # Actualizamos el nivel y la fecha de modificación
     ticket.nivel = new_level
     ticket.updated_at = datetime.datetime.utcnow()
 
