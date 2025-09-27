@@ -14,6 +14,18 @@ class ToolBusqueda:
         """
         Función auxiliar para formatear los detalles de un ticket en un texto legible.
         """
+
+        nombre_analista = "Aún no asignado"
+        try:
+            # Intentamos acceder directamente a través de la relación correcta
+            nombre_analista = ticket.analista.persona.external_collection[0].nombre
+        except (AttributeError, IndexError):
+            # Capturamos dos posibles errores:
+            # 1. AttributeError: Si ticket.analista o .persona es None.
+            # 2. IndexError: Si .external_collection existe pero está vacía.
+            # Si ocurre alguno, simplemente continuamos, manteniendo "Aún no asignado".
+            pass
+
         try:
             nombre_servicio = ticket.cliente_servicio.servicio.nombre
         except Exception:
@@ -33,6 +45,7 @@ class ToolBusqueda:
             f"  - **Nivel:** {ticket.nivel}\n"
             f"  - **Tipo:** {ticket.tipo}\n"
             f"  - **Estado:** {ticket.estado}"
+            f"  - **Analista:** {nombre_analista}"
             f"  - **Fecha de Creación:** {fecha_creacion}"
         )
 
