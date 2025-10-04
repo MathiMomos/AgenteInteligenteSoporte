@@ -367,8 +367,7 @@ def derivar_ticket(
     db.commit()
     db.refresh(ticket)
 
-    print(
-        f"Ticket #{ticket_id} derivado por {current_user.nombre} a {new_analyst.id_analista} por motivo: {payload.motivo}")
+    print(f"Ticket #{ticket_id} derivado por {current_user.nombre} a {new_analyst.id_analista} por motivo: {payload.motivo}")
 
     info = crud_analista.hydrate_ticket_info(db, ticket)
     conv = crud_analista.get_conversation_by_ticket(db, ticket_id)

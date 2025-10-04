@@ -70,7 +70,7 @@ class ToolBusqueda:
 
         @tool
         def listar_tickets_abiertos() -> str:
-            """Lista todos los tickets abiertos (no finalizados) del colaborador actual. Úsalo si el usuario pregunta por 'mis tickets'."""
+            """Lista todos los tickets abiertos (no finalizados) del colaborador actual. Úsalo si el usuario pregunta por 'mis tickets abiertos'."""
             tickets = crud_tickets.get_all_open_tickets(self.db, self.user_info)
             if not tickets:
                 return "Usted no tiene tickets abiertos actualmente."
@@ -78,6 +78,17 @@ class ToolBusqueda:
             tickets_formateados = [self._format_ticket_details(t) for t in tickets]
             respuesta_final = "\n\n".join(tickets_formateados)
             return f"He encontrado los siguientes tickets abiertos:\n{respuesta_final}"
+
+        @tool
+        def listar_tickets() -> str:
+            """Lista todos los tickets del colaborador actual. Úsalo si el usuario pregunta por 'todos mis tickets'."""
+            tickets = crud_tickets.get_all_tickets(self.db, self.user_info)
+            if not tickets:
+                return "Usted no tiene tickets actualmente."
+
+            tickets_formateados = [self._format_ticket_details(t) for t in tickets]
+            respuesta_final = "\n\n".join(tickets_formateados)
+            return f"He encontrado los siguientes tickets:\n{respuesta_final}"
 
         @tool
         def buscar_tickets_por_asunto(asunto: str) -> str:
@@ -90,4 +101,4 @@ class ToolBusqueda:
             respuesta_final = "\n\n".join(tickets_formateados)
             return f"He encontrado los siguientes tickets relacionados con '{asunto}':\n{respuesta_final}"
 
-        return [buscar_ticket_por_id, listar_tickets_abiertos, buscar_tickets_por_asunto]
+        return [buscar_ticket_por_id, listar_tickets, listar_tickets_abiertos, buscar_tickets_por_asunto]

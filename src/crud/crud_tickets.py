@@ -112,6 +112,19 @@ def get_all_open_tickets(db_session: Session, user_info: sch.TokenData) -> list[
         db.Ticket.estado != "finalizado"
     ).all()
 
+def get_all_tickets(db_session: Session, user_info: sch.TokenData) -> list[db.Ticket]:
+    """
+    Devuelve todos los tickets del colaborador actual.
+    """
+    try:
+        colaborador_uuid = uuid.UUID(user_info.colaborador_id)
+    except Exception:
+        return []
+
+    return db_session.query(db.Ticket).filter(
+        db.Ticket.id_colaborador == colaborador_uuid
+    ).all()
+
 
 def get_tickets_by_subject(db_session: Session, subject: str, user_info: sch.TokenData) -> list[db.Ticket]:
     """
