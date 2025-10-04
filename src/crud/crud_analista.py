@@ -87,6 +87,7 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
         "company": None,
         "service": None,
         "level": getattr(ticket, "nivel", None),  # <- nuevo
+        "description": getattr(ticket, "diagnostico", None),
     }
 
     # Fecha (created_at)

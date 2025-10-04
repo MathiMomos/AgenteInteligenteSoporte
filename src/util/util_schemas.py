@@ -101,6 +101,7 @@ class AnalystTicketDetail(BaseModel):
     conversation: List[AnalystMessage]
     updated_at: Optional[datetime.datetime] = Field(None, description="Fecha de la última actualización del ticket")
     level: Optional[str] = None
+    description: Optional[str] = None
 
 # En src/util/util_schemas.py
 
