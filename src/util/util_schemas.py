@@ -102,6 +102,7 @@ class AnalystTicketDetail(BaseModel):
     updated_at: Optional[datetime.datetime] = Field(None, description="Fecha de la última actualización del ticket")
     level: Optional[str] = None
     description: Optional[str] = None
+    escalation_reason: Optional[str] = None
 
 # En src/util/util_schemas.py
 

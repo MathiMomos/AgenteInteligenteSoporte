@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy import func
 from src.util import util_base_de_datos as db
 from src.util import util_schemas as sch
+from src.crud import crud_escalados
 
 
 def get_analyst_id_for_current_user_or_default(db_session: Session, user_info: sch.TokenData):
@@ -88,6 +89,7 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
         "service": None,
         "level": getattr(ticket, "nivel", None),  # <- nuevo
         "description": getattr(ticket, "diagnostico", None),
+        "escalation_reason": None,
     }
 
     # Fecha (created_at)
@@ -114,6 +116,10 @@ def hydrate_ticket_info(db_session: Session, ticket: db.Ticket):
         servicio = db_session.query(db.Servicio).filter(db.Servicio.id_servicio == cs.id_servicio).first()
         if servicio:
             info["service"] = getattr(servicio, "nombre", None)
+
+    escalation_reason = crud_escalados.get_latest_escalation_reason(db_session, ticket.id_ticket)
+    if escalation_reason:
+        info["escalation_reason"] = escalation_reason
 
     return info
 
