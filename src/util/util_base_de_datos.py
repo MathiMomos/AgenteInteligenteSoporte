@@ -4,13 +4,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 import os
-from src.util import util_env as key
+from src.util import util_keyvault as key
 
-USER = key.require("PGUSER")
-PASSWORD = key.require("PGPASSWORD")
-HOST = key.require("PGHOST")
-PORT = key.require("PGPORT")
-DB_NAME = key.require("PGDATABASE")
+USER = key.getkeyapi("PGUSER")
+PASSWORD = key.getkeyapi("PGPASSWORD")
+HOST = key.getkeyapi("PGHOST")
+PORT = key.getkeyapi("PGPORT")
+DB_NAME = key.getkeyapi("PGDATABASE")
 
 DATABASE_URL = (
     f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/analyticsdb?sslmode=require"

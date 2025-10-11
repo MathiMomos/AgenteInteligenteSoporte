@@ -1,11 +1,11 @@
 from langchain_openai import AzureChatOpenAI
-from src.util import util_env as key
+from src.util import util_keyvault as key
 
 def obtener_llm():
     return AzureChatOpenAI(
-        azure_endpoint=key.require("CONF_AZURE_ENDPOINT"),
-        api_key=key.require("CONF_OPENAI_API_KEY"),
-        api_version=key.require("CONF_API_VERSION"),
-        deployment_name=key.require("CONF_AZURE_DEPLOYMENT"),
+        azure_endpoint=key.getkeyapi("CONF-AZURE-ENDPOINT"),
+        api_key=key.getkeyapi("CONF-OPENAI-API-KEY"),
+        api_version=key.getkeyapi("CONF-API-VERSION"),
+        deployment_name=key.getkeyapi("CONF-AZURE-DEPLOYMENT"),
         temperature=0.6
     )

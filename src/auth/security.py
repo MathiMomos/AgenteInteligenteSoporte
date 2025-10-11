@@ -11,11 +11,11 @@ from pydantic import ValidationError
 from src.util import util_schemas as sch
 
 ### Configuración de Seguridad
+from src.util import util_keyvault as key
 
-# Lee la clave secreta del archivo ..env
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = key.getkeyapi("SECRET-KEY")
 if not SECRET_KEY:
-    raise ValueError("No se encontró SECRET_KEY en las variables de entorno.")
+    raise ValueError("No se pudo obtener la llave secreta de Google OAuth.")
 
 # Algoritmo y tiempo de vida del token
 ALGORITHM = "HS256"

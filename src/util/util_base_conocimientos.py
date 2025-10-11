@@ -1,14 +1,14 @@
 from langchain_community.retrievers.azure_ai_search import AzureAISearchRetriever
-from src.util import util_env as key
+from src.util import util_keyvault as key
 
 def obtener_bc() -> AzureAISearchRetriever:
     """
     Devuelve un retriever usando Azure AI Search (AzureAISearchRetriever).
     """
     retriever = AzureAISearchRetriever(
-        service_name=key.require("CONF_AZURE_SEARCH_SERVICE_NAME"),
-        index_name=key.require("CONF_AZURE_INDEX"),
-        api_key=key.require("CONF_AZURE_SEARCH_KEY"),
+        service_name=key.getkeyapi("CONF-AZURE-SEARCH-SERVICE-NAME"),
+        index_name=key.getkeyapi("CONF-AZURE-INDEX"),
+        api_key=key.getkeyapi("CONF-AZURE-SEARCH-KEY"),
         top_k=5
     )
     return retriever

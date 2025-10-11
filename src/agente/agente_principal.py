@@ -200,11 +200,3 @@ def handle_query(query: str, thread_id: str, user_info: sch.TokenData, db: Sessi
     config = {"configurable": {"thread_id": thread_id}}
     result = agent_with_tools.invoke(inputs, config)
     return result["messages"][-1].content
-
-
-
-
-
-
-#- Devuelva la información en una **tabla Markdown** con las columnas EXACTAS y en este orden: | ID | Asunto | Tipo | Usuario | Empresa | Servicio | Nivel | Estado | Fecha de creación | Tiempo de respuesta |
-

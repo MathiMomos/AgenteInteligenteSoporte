@@ -4,8 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V5&#10;Dockerfile creado">
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V5.1&#10;Ajustes y refactorización">
+      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/util/util_keyvault.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth/security.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth/security.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_base_conocimientos.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_base_conocimientos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_base_de_datos.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_base_de_datos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_env.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_llm.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_llm.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +80,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -83,6 +92,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\User\PycharmProjects\AgenteInteligenteSoporte" />
       <recent name="C:\Users\User\PycharmProjects\AgenteInteligenteSoporte\old" />
       <recent name="C:\Users\User\PycharmProjects\AgenteInteligenteSoporte\src\tool" />
       <recent name="C:\Users\User\PycharmProjects\AgenteInteligenteSoporte\src\agente" />
@@ -203,7 +213,10 @@
       <workItem from="1759968512226" duration="5659000" />
       <workItem from="1760061612851" duration="1483000" />
       <workItem from="1760065833136" duration="3826000" />
-      <workItem from="1760119522244" duration="351000" />
+      <workItem from="1760119522244" duration="2203000" />
+      <workItem from="1760125927366" duration="948000" />
+      <workItem from="1760127330410" duration="15277000" />
+      <workItem from="1760204479767" duration="10434000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -381,7 +394,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760066284216</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="AGENTE INTELIGENTE V5.1&#10;Ajustes y refactorización">
+      <option name="closed" value="true" />
+      <created>1760120001936</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1760120001936</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -420,12 +441,13 @@
     <MESSAGE value="AGENTE INTELIGENTE V4.6&#10;&#10;RECUPERACIÓN DE ANALISTA AÑADIDA, AJUSTES AL PROMPT" />
     <MESSAGE value="AGENTE INTELIGENTE V4.7&#10;&#10;DESCRIPCIÓN DE MOTIVOS DE ESCALADO AL ANALISTA AÑADIDO, AJUSTES AL PROMPT" />
     <MESSAGE value="AGENTE INTELIGENTE V5&#10;Dockerfile creado" />
-    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V5&#10;Dockerfile creado" />
+    <MESSAGE value="AGENTE INTELIGENTE V5.1&#10;Ajustes y refactorización" />
+    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V5.1&#10;Ajustes y refactorización" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$orquestacion_agente_inteligente.coverage" NAME="orquestacion_agente_inteligente Coverage Results" MODIFIED="1757151758716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/orquestacion" />
-    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1759627623481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1760224999489" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test.coverage" NAME="test Coverage Results" MODIFIED="1757151574330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
