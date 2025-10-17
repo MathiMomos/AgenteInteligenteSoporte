@@ -7,6 +7,31 @@ from src.util import util_base_de_datos as db_utils
 from src.auth import security
 from src.crud import crud_analista, crud_tickets, crud_escalados
 
+# =======================================================================
+# @section 1: AÑADIMOS EL DICCIONARIO DE TRADUCCIÓN
+# =======================================================================
+UI_TO_DB_STATUS = {
+    "abierto": "aceptado",
+    "en atención": "en atención",
+    "en atencion": "en atención", # Por si llega sin acento
+    "cerrado": "finalizado",
+    "finalizado": "finalizado",   # Por si ya envía el valor correcto
+    "cancelado": "cancelado",
+    "rechazado": "cancelado"
+}
+
+# =======================================================================
+# @section 1: AÑADIMOS DICCIONARIO PARA NIVELES
+# =======================================================================
+UI_TO_DB_LEVEL = {
+    "bajo": "bajo",
+    "medio": "medio",
+    "alto": "alto",
+    "crítico": "crítico",
+    "critico": "crítico" # Por si llega sin acento
+}
+# =======================================================================
+
 router = APIRouter()
 
 
@@ -77,19 +102,46 @@ def update_ticket_status(
     if ticket.id_analista != analyst_id:
         raise HTTPException(status_code=403, detail="No autorizado para modificar este ticket.")
 
+    # =======================================================================
+    # @section 2: LÓGICA DE TRADUCCIÓN AÑADIDA
+    # =======================================================================
+    # Limpiamos el estado que viene del frontend (minúsculas, sin espacios extra)
+    status_from_ui = payload.status.lower().strip()
+    # Usamos el diccionario para "traducir" el estado
+    db_status = UI_TO_DB_STATUS.get(status_from_ui)
+
+    # Si el estado enviado no está en nuestro diccionario, lanzamos un error
+    if not db_status:
+        raise HTTPException(status_code=400, detail=f"Estado '{payload.status}' no es válido.")
+
+    # Llamamos a la función del CRUD con el valor YA TRADUCIDO
     updated_ticket = crud_analista.update_ticket_status_db(
-        db_session=db, ticket_id=ticket_id, new_status=payload.status,
-        description=payload.description if payload.status == "finalizado" else None,
+        db_session=db,
+        ticket_id=ticket_id,
+        new_status=db_status,
+        description=payload.description if db_status == "finalizado" else None,
     )
+    # =======================================================================
+
     if not updated_ticket:
         raise HTTPException(status_code=500, detail="No se pudo actualizar el estado.")
 
-    if payload.level:
+    # =======================================================================
+    # @section 2: LÓGICA DE TRADUCCIÓN AÑADIDA PARA EL NIVEL
+    # =======================================================================
+    if getattr(payload, 'level', None):
+        level_from_ui = payload.level.lower().strip()
+        db_level = UI_TO_DB_LEVEL.get(level_from_ui)
+
+        if not db_level:
+            raise HTTPException(status_code=400, detail=f"Nivel '{payload.level}' no es válido.")
+
         updated_ticket = crud_analista.update_ticket_level_db(
-            db_session=db, ticket_id=ticket_id, new_level=payload.level
+            db_session=db, ticket_id=ticket_id, new_level=db_level  # Usamos el valor traducido
         )
         if not updated_ticket:
             raise HTTPException(status_code=500, detail="No se pudo actualizar el nivel.")
+    # =======================================================================
 
     info = crud_analista.hydrate_ticket_info(db, updated_ticket)
     conv = crud_analista.get_conversation_by_ticket(db, ticket_id)
