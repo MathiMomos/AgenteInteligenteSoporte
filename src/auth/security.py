@@ -13,6 +13,10 @@ from src.util import util_schemas as sch
 ### Configuración de Seguridad
 from src.util import util_keyvault as key
 
+## Google
+from google.oauth2 import id_token
+from google.auth.transport import requests as grequests
+
 SECRET_KEY = key.getkeyapi("SECRET-KEY")
 if not SECRET_KEY:
     raise ValueError("No se pudo obtener la llave secreta de Google OAuth.")
@@ -48,3 +52,23 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> sch.TokenData:
         raise credentials_exception
 
     return token_data
+
+# --- FUNCIÓN AUXILIAR PARA VERIFICAR TOKEN (EVITA REPETIR CÓDIGO) ---
+def verify_google_token(id_token_str: str) -> dict:
+    """Verifica el token de Google y devuelve la información del usuario."""
+    google_client_id = key.getkeyapi("GOOGLE-CLIENT-ID")
+    if not google_client_id:
+        raise HTTPException(status_code=500, detail="GOOGLE_CLIENT_ID no configurado")
+
+    try:
+        id_info = id_token.verify_oauth2_token(
+            id_token_str, grequests.Request(), google_client_id
+        )
+        if id_info.get("iss") not in (
+                "accounts.google.com",
+                "https://accounts.google.com",
+        ):
+            raise HTTPException(status_code=401, detail="Issuer inválido")
+        return id_info
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=f"Token de Google inválido: {e}")
