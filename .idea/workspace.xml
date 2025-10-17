@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V7.1&#10;LOGIN ACCESIBLE PARA CLIENTE GMAIL TOMANDO AMBOS ROLES">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/routes/analyst.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes/analyst.py" afterDir="false" />
-    </list>
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -220,7 +217,7 @@
       <workItem from="1760589149535" duration="9965000" />
       <workItem from="1760665093585" duration="11762000" />
       <workItem from="1760685296497" duration="2179000" />
-      <workItem from="1760734380951" duration="4038000" />
+      <workItem from="1760734380951" duration="4683000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -446,7 +443,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760687436080</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES">
+      <option name="closed" value="true" />
+      <created>1760738586847</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1760738586847</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -464,7 +469,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="AGENTE INTELIGENTE V1.0.0" />
     <MESSAGE value="AGENTE INTELIGENTE V1.1" />
     <MESSAGE value="AGENTE INTELIGENTE V1.1.1" />
     <MESSAGE value="requirements.txt AÑADIDO" />
@@ -489,7 +493,8 @@
     <MESSAGE value="AGENTE INTELIGENTE V6.2&#10;CLIENTE GMAIL PERMITIDO PARA COLABORADOR" />
     <MESSAGE value="AGENTE INTELIGENTE V7&#10;LOGIN DIFERIDO POR ROL, ENDPOINTS SEPARADOS" />
     <MESSAGE value="AGENTE INTELIGENTE V7.1&#10;LOGIN ACCESIBLE PARA CLIENTE GMAIL TOMANDO AMBOS ROLES" />
-    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V7.1&#10;LOGIN ACCESIBLE PARA CLIENTE GMAIL TOMANDO AMBOS ROLES" />
+    <MESSAGE value="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES" />
+    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

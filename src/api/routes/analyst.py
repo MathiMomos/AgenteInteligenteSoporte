@@ -40,7 +40,7 @@ def listar_conversaciones_analista(
         limit: int = Query(20, ge=1, le=100),
         offset: int = Query(0, ge=0),
         status: Optional[str] = Query(None,
-                                      description="Estados directos de la BD: aceptado, en atención, finalizado, cancelado"),
+                                      description="Filtro por estado: Abierto, En Atención, Cerrado, etc."),
         db: Session = Depends(db_utils.obtener_bd),
         current_user: sch.TokenData = Depends(security.get_current_user),
 ):
@@ -48,23 +48,26 @@ def listar_conversaciones_analista(
     if not analyst_id:
         return sch.AnalystTicketPage(items=[], total=0, limit=limit, offset=offset)
 
-    estados_bd = [status] if status and status.lower() != "todos" else None
+    # =======================================================================
+    # @section CORRECCIÓN AÑADIDA - Lógica de traducción para el filtro
+    # =======================================================================
+    estados_bd = None
+    if status and status.lower() != "todos":
+        # Limpiamos y traducimos el estado que viene de la URL
+        status_from_ui = status.lower().strip()
+        db_status = UI_TO_DB_STATUS.get(status_from_ui)
+
+        if not db_status:
+            raise HTTPException(status_code=400, detail=f"Estado de filtro '{status}' no es válido.")
+
+        estados_bd = [db_status]
+    # =======================================================================
 
     rows, total = crud_analista.get_tickets_by_analyst(
         db, analyst_id, limit=limit, offset=offset, estados=estados_bd
     )
     infos = crud_analista.hydrate_ticket_page(db, rows)
-    items = [
-        sch.AnalystTicketItem(
-            id_ticket=info["id_ticket"],
-            subject=info.get("subject", ""),
-            user=info["user"],
-            service=info["service"],
-            status=info["status"],
-            date=info["date"],
-        )
-        for info in infos
-    ]
+    items = [sch.AnalystTicketItem(**info) for info in infos]
     return sch.AnalystTicketPage(items=items, total=total, limit=limit, offset=offset)
 
 
