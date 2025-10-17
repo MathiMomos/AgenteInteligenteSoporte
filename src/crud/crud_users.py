@@ -7,8 +7,9 @@ from src.util import util_base_de_datos as db
 
 def get_or_create_from_external(db_session: Session, id_info: dict) -> db.Persona:
     """
-    Busca un usuario por su login de Google. Si no existe, lo crea.
-    Añade un caso especial para asignar usuarios @gmail.com al cliente "Gmail".
+    Busca una persona por su login de Google. Si no existe, la crea.
+    Su única responsabilidad es gestionar los registros de Persona y External.
+    No se encarga de asignar roles.
     """
     provider = "google"
     provider_id = id_info.get("sub")
@@ -28,11 +29,11 @@ def get_or_create_from_external(db_session: Session, id_info: dict) -> db.Person
         external_identity.correo = email
         external_identity.nombre = name
         external_identity.hd = hosted_domain
-        db_session.commit()
+        # NO hacemos commit aquí. La función que llama es la responsable de la transacción.
         return external_identity.persona
 
     except NoResultFound:
-        # 2. Si no existe, creamos el usuario completo
+        # 2. Si no existe, creamos la Persona y el External
         print(f"Usuario nuevo. Creando perfil para: {email}")
 
         new_persona = db.Persona()
@@ -49,36 +50,5 @@ def get_or_create_from_external(db_session: Session, id_info: dict) -> db.Person
         )
         db_session.add(new_external)
 
-        # --- LÓGICA MODIFICADA PARA ASIGNAR CLIENTE ---
-        target_cliente = None
-
-        # Metodo 1: Búsqueda por dominio corporativo (como antes)
-        if hosted_domain:
-            cliente_dominio = db_session.query(db.ClienteDominio).filter(
-                db.ClienteDominio.dominio == hosted_domain
-            ).first()
-            if cliente_dominio:
-                target_cliente = cliente_dominio.cliente
-
-        # Metodo 2: Caso especial para usuarios @gmail.com
-        elif email and email.lower().endswith("@gmail.com"):
-            gmail_cliente = db_session.query(db.Cliente).filter(
-                db.Cliente.nombre == "Gmail"
-            ).first()
-            if gmail_cliente:
-                target_cliente = gmail_cliente
-
-        # Si se encontró un cliente por cualquiera de los dos métodos, se crea el colaborador
-        if target_cliente:
-            print(f"Dominio reconocido. Asignando al cliente: {target_cliente.nombre}")
-            new_colaborador = db.Colaborador(
-                id_persona=new_persona.id_persona,
-                id_cliente=target_cliente.id_cliente
-            )
-            db_session.add(new_colaborador)
-        # --- FIN DE LA LÓGICA MODIFICADA ---
-
-        db_session.commit()
-        db_session.refresh(new_persona)
-
+        # El commit será manejado por la función que llama a esta.
         return new_persona

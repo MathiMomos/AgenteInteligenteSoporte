@@ -1,35 +1,50 @@
 from src.util import util_keyvault as key
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from src.auth.security import verify_google_token
+from google.oauth2 import id_token
+from google.auth.transport import requests as grequests
 
 from src.util import util_schemas as sch
 from src.util import util_base_de_datos as db_utils
 from src.auth import security
 from src.crud import crud_users
+from src.crud import crud_roles
 
 router = APIRouter()
+
+
+# --- FUNCIÓN AUXILIAR PARA VERIFICAR TOKEN (EVITA REPETIR CÓDIGO) ---
+def verify_google_token(id_token_str: str) -> dict:
+    """Verifica el token de Google y devuelve la información del usuario."""
+    google_client_id = key.getkeyapi("GOOGLE-CLIENT-ID")
+    if not google_client_id:
+        raise HTTPException(status_code=500, detail="GOOGLE_CLIENT_ID no configurado")
+
+    try:
+        id_info = id_token.verify_oauth2_token(
+            id_token_str, grequests.Request(), google_client_id
+        )
+        if id_info.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
+            raise HTTPException(status_code=401, detail="Issuer inválido")
+        return id_info
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=f"Token de Google inválido: {e}")
+
 
 @router.post("/google/login/colaborador", response_model=sch.Token, tags=["Auth"])
 async def google_login_colaborador(
         request: sch.GoogleLoginRequest,
         db: Session = Depends(db_utils.obtener_bd),
 ):
-    """Endpoint de login exclusivo para Colaboradores."""
+    """Endpoint de login para Colaboradores. Crea el rol si no existe."""
     id_info = verify_google_token(request.id_token)
 
-    # Busca o crea al usuario. Esta función ya maneja la creación de colaboradores nuevos.
     persona = crud_users.get_or_create_from_external(db_session=db, id_info=id_info)
 
-    colaborador = db.query(db_utils.Colaborador).filter_by(id_persona=persona.id_persona).first()
+    colaborador = crud_roles.get_or_create_collaborator_role(db, persona)
 
-    if not colaborador:
-        raise HTTPException(
-            status_code=403,
-            detail="Acceso denegado. Este usuario no está registrado como colaborador.",
-        )
+    db.commit()
 
-    # Si es un colaborador válido, procedemos a generar su token
     cliente = db.query(db_utils.Cliente).filter_by(id_cliente=colaborador.id_cliente).first()
     servicios_contratados_db = (
         db.query(db_utils.Servicio)
@@ -58,29 +73,22 @@ async def google_login_analista(
         request: sch.GoogleLoginRequest,
         db: Session = Depends(db_utils.obtener_bd),
 ):
-    """Endpoint de login exclusivo para Analistas."""
+    """Endpoint de login para Analistas. Crea el rol con nivel 1 si no existe."""
     id_info = verify_google_token(request.id_token)
 
-    # Busca o crea la 'Persona' base. Un analista ya debe tener su rol asignado manualmente.
     persona = crud_users.get_or_create_from_external(db_session=db, id_info=id_info)
 
-    analista = db.query(db_utils.Analista).filter_by(id_persona=persona.id_persona).first()
+    analista = crud_roles.get_or_create_analyst_role(db, persona)
 
-    if not analista:
-        raise HTTPException(
-            status_code=403,
-            detail="Acceso denegado. No tienes permisos de analista.",
-        )
+    db.commit()
 
-    # Si es un analista válido, generamos su token
     token_data_payload = sch.TokenData(
         correo=id_info.get("email"),
         nombre=id_info.get("name"),
         persona_id=str(persona.id_persona),
-        # IDs de colaborador/cliente vacíos o genéricos para analistas
         colaborador_id="00000000-0000-0000-0000-000000000000",
         cliente_id="00000000-0000-0000-0000-000000000000",
-        cliente_nombre="ANALYTICS",  # Nombre interno para la empresa
+        cliente_nombre="ANALYTICS",
         servicios_contratados=[]
     )
     access_token = security.create_access_token(data=token_data_payload)
