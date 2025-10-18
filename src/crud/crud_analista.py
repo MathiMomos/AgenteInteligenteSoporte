@@ -11,28 +11,23 @@ from src.util import util_schemas as sch
 from src.crud import crud_escalados
 
 
-def get_analyst_id_for_current_user_or_default(db_session: Session, user_info: sch.TokenData):
+def get_analyst_id_for_current_user(db_session: Session, user_info: sch.TokenData) -> uuid.UUID | None:
     """
-    Si el usuario autenticado es Analista, devuelve su id_analista.
-    Si no, devuelve el analista por defecto buscando por nombre "Ana Lytics".
+    Busca y devuelve el id_analista del usuario autenticado.
+    Si el usuario no es un analista, devuelve None.
     """
-    # 1) Intentar con el usuario actual (si fuese analista)
     try:
         persona_uuid = uuid.UUID(user_info.persona_id)
-    except Exception:
-        persona_uuid = None
+    except (ValueError, TypeError):
+        return None
 
     if persona_uuid:
-        analista = db_session.query(db.Analista).filter(db.Analista.id_persona == persona_uuid).first()
+        analista = db_session.query(db.Analista).filter(
+            db.Analista.id_persona == persona_uuid
+        ).first()
+
         if analista:
             return analista.id_analista
-
-    # 2) Fallback: Analista por defecto (buscar por nombre insensible a mayúsculas)
-    ext = db_session.query(db.External).filter(db.External.nombre.ilike("Ana Lytics")).first()
-    if ext and getattr(ext, "persona", None):
-        analista_def = db_session.query(db.Analista).filter(db.Analista.id_persona == ext.persona.id_persona).first()
-        if analista_def:
-            return analista_def.id_analista
 
     return None
 

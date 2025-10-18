@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES" />
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V7.2.1&#10;BUGFIX ESTADOS INCOMPATIBLES EXTRAS">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/routes/analyst.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes/analyst.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/routes/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/crud/crud_analista.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/crud/crud_analista.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -35,9 +40,6 @@
     &quot;accountId&quot;: &quot;bf8508dc-726f-48ea-9be9-1fb3e2263090&quot;
   }
 }</component>
-  <component name="HttpClientEndpointsTabState">
-    <option name="cachedRequestData" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;ad2d9665a2584882219722d6d9599d98cd153205&quot; value=&quot;###&amp;#10;POST http://localhost:8000/auth/google/login&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
-  </component>
   <component name="HttpClientOnboardingState">{
   &quot;isOnboardingCommentShown&quot;: true
 }</component>
@@ -70,7 +72,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;io.github.pandier.intellijdiscordrp.settings.DiscordSettingsConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -217,7 +219,8 @@
       <workItem from="1760589149535" duration="9965000" />
       <workItem from="1760665093585" duration="11762000" />
       <workItem from="1760685296497" duration="2179000" />
-      <workItem from="1760734380951" duration="4683000" />
+      <workItem from="1760734380951" duration="7864000" />
+      <workItem from="1760756084410" duration="2124000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -451,7 +454,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760738586847</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="AGENTE INTELIGENTE V7.2.1&#10;BUGFIX ESTADOS INCOMPATIBLES EXTRAS">
+      <option name="closed" value="true" />
+      <created>1760739758150</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1760739758150</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -469,7 +480,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="AGENTE INTELIGENTE V1.1" />
     <MESSAGE value="AGENTE INTELIGENTE V1.1.1" />
     <MESSAGE value="requirements.txt AÑADIDO" />
     <MESSAGE value="AGENTE INTELIGENTE V2.0.0" />
@@ -494,12 +504,13 @@
     <MESSAGE value="AGENTE INTELIGENTE V7&#10;LOGIN DIFERIDO POR ROL, ENDPOINTS SEPARADOS" />
     <MESSAGE value="AGENTE INTELIGENTE V7.1&#10;LOGIN ACCESIBLE PARA CLIENTE GMAIL TOMANDO AMBOS ROLES" />
     <MESSAGE value="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES" />
-    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES" />
+    <MESSAGE value="AGENTE INTELIGENTE V7.2.1&#10;BUGFIX ESTADOS INCOMPATIBLES EXTRAS" />
+    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V7.2.1&#10;BUGFIX ESTADOS INCOMPATIBLES EXTRAS" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$orquestacion_agente_inteligente.coverage" NAME="orquestacion_agente_inteligente Coverage Results" MODIFIED="1757151758716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/orquestacion" />
-    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1760738342070" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1760756260072" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test.coverage" NAME="test Coverage Results" MODIFIED="1757151574330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

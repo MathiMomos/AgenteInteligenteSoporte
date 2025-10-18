@@ -13,13 +13,11 @@ from src.crud import crud_roles
 router = APIRouter()
 
 
-# --- FUNCIÓN AUXILIAR PARA VERIFICAR TOKEN (EVITA REPETIR CÓDIGO) ---
 def verify_google_token(id_token_str: str) -> dict:
     """Verifica el token de Google y devuelve la información del usuario."""
     google_client_id = key.getkeyapi("GOOGLE-CLIENT-ID")
     if not google_client_id:
         raise HTTPException(status_code=500, detail="GOOGLE_CLIENT_ID no configurado")
-
     try:
         id_info = id_token.verify_oauth2_token(
             id_token_str, grequests.Request(), google_client_id
@@ -36,14 +34,11 @@ async def google_login_colaborador(
         request: sch.GoogleLoginRequest,
         db: Session = Depends(db_utils.obtener_bd),
 ):
-    """Endpoint de login para Colaboradores. Crea el rol si no existe."""
     id_info = verify_google_token(request.id_token)
-
     persona = crud_users.get_or_create_from_external(db_session=db, id_info=id_info)
-
     colaborador = crud_roles.get_or_create_collaborator_role(db, persona)
 
-    db.commit()
+    db.commit()  # <-- CORRECCIÓN CLAVE
 
     cliente = db.query(db_utils.Cliente).filter_by(id_cliente=colaborador.id_cliente).first()
     servicios_contratados_db = (
@@ -73,14 +68,11 @@ async def google_login_analista(
         request: sch.GoogleLoginRequest,
         db: Session = Depends(db_utils.obtener_bd),
 ):
-    """Endpoint de login para Analistas. Crea el rol con nivel 1 si no existe."""
     id_info = verify_google_token(request.id_token)
-
     persona = crud_users.get_or_create_from_external(db_session=db, id_info=id_info)
-
     analista = crud_roles.get_or_create_analyst_role(db, persona)
 
-    db.commit()
+    db.commit()  # <-- CORRECCIÓN CLAVE
 
     token_data_payload = sch.TokenData(
         correo=id_info.get("email"),

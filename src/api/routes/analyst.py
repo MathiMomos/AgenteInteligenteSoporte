@@ -44,7 +44,8 @@ def listar_conversaciones_analista(
         db: Session = Depends(db_utils.obtener_bd),
         current_user: sch.TokenData = Depends(security.get_current_user),
 ):
-    analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
+    analyst_id = crud_analista.get_analyst_id_for_current_user(db, current_user)
+
     if not analyst_id:
         return sch.AnalystTicketPage(items=[], total=0, limit=limit, offset=offset)
 
@@ -53,7 +54,6 @@ def listar_conversaciones_analista(
     # =======================================================================
     estados_bd = None
     if status and status.lower() != "todos":
-        # Limpiamos y traducimos el estado que viene de la URL
         status_from_ui = status.lower().strip()
         db_status = UI_TO_DB_STATUS.get(status_from_ui)
 
@@ -61,7 +61,6 @@ def listar_conversaciones_analista(
             raise HTTPException(status_code=400, detail=f"Estado de filtro '{status}' no es válido.")
 
         estados_bd = [db_status]
-    # =======================================================================
 
     rows, total = crud_analista.get_tickets_by_analyst(
         db, analyst_id, limit=limit, offset=offset, estados=estados_bd
