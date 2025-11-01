@@ -94,7 +94,7 @@ def update_ticket_status(
         db: Session = Depends(db_utils.obtener_bd),
         current_user: sch.TokenData = Depends(security.get_current_user),
 ):
-    analyst_id = crud_analista.get_analyst_id_for_current_user_or_default(db, current_user)
+    analyst_id = crud_analista.get_analyst_id_for_current_user(db, current_user)
     if not analyst_id:
         raise HTTPException(status_code=403, detail="No autorizado (no es analista).")
 

@@ -114,3 +114,51 @@ class UpdateTicketStatusRequest(BaseModel):
     status: str
     description: Optional[str] = None
     level: Optional[str] = None
+
+# Admin ==================================
+
+# src/util_schemas.py
+from pydantic import BaseModel, Field
+from typing import List, Optional
+import uuid
+import datetime
+
+
+# ... (todos los schemas de Auth, Chat y Analista van aquí) ...
+# ... (GoogleLoginRequest, Token, TokenData, ChatRequest, etc.) ...
+
+# =======================================================================
+# @section NUEVOS SCHEMAS PARA EL PANEL DE ADMINISTRADOR
+# =======================================================================
+
+
+class PromptUpdate(BaseModel):
+    nuevo_texto: str = Field(..., min_length=50)
+
+
+
+class ServicioCreate(BaseModel):
+    nombre: str
+
+
+class Servicio(BaseModel):
+    id_servicio: str
+    nombre: str
+
+
+
+class Cliente(BaseModel):
+    id_cliente: str
+    nombre: str
+
+
+class ClienteCreate(BaseModel):
+    """
+    Schema de ENTRADA para crear un nuevo cliente.
+    Ahora incluye UN solo dominio.
+    """
+    nombre_cliente: str = Field(..., min_length=1)
+    servicios_ids: List[str] = Field(..., min_length=1, description="Lista de IDs de servicios (UUIDs).")
+
+    # --- CAMPO MODIFICADO ---
+    dominio: str = Field(..., min_length=3, description="El dominio único del cliente (ej: 'empresa.com').")

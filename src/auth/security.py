@@ -32,7 +32,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/google/login")
 ### Funciones Principales
 
 def create_access_token(data: sch.TokenData) -> str:
-    to_encode = data.dict()
+    to_encode = data.model_dump()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -72,3 +72,23 @@ def verify_google_token(id_token_str: str) -> dict:
         return id_info
     except ValueError as e:
         raise HTTPException(status_code=401, detail=f"Token de Google inválido: {e}")
+
+def get_current_admin_user(current_user: sch.TokenData = Depends(get_current_user)) -> sch.TokenData:
+    """
+    Una dependencia que verifica si el usuario actual es EL administrador hardcodeado.
+    """
+    ADMIN_EMAIL = "grupo2soporteadm@gmail.com"
+    if not ADMIN_EMAIL:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="ADMIN_EMAIL no está configurado en el servidor."
+        )
+
+    if current_user.correo.lower() != ADMIN_EMAIL.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos de administrador para realizar esta acción."
+        )
+
+    # 3. Si es el admin, devolvemos sus datos
+    return current_user

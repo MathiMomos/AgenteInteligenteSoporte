@@ -30,7 +30,7 @@ engine = create_engine(DATABASE_URL)
 
 # Preparamos las variables para que existan incluso si el mapeo falla
 Base = None
-Persona = Cliente = Servicio = ClienteDominio = Colaborador = Analista = External = ClienteServicio = Ticket = Conversacion = Escalado = None
+Persona = Cliente = Servicio = ClienteDominio = Colaborador = Analista = External = ClienteServicio = Ticket = Conversacion = Escalado = Prompt = None
 
 try:
     # Creamos una base para el automapeo
@@ -51,6 +51,7 @@ try:
     Ticket = Base.classes.ticket
     Conversacion = Base.classes.conversacion
     Escalado = Base.classes.escalado
+    Prompt = Base.classes.prompt
 
     print("Conexión y mapeo a la base de datos exitosos.")
 

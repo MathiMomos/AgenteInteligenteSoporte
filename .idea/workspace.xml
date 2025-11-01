@@ -4,11 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V7.2.1&#10;BUGFIX ESTADOS INCOMPATIBLES EXTRAS">
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="AGENTE INTELIGENTE V7.3&#10;BUGFIX CREACION DE ANALISTAS">
+      <change afterPath="$PROJECT_DIR$/src/api/routes/admin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/crud/crud_admin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/util/util_prompt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/api.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/routes/analyst.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes/analyst.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/routes/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/crud_analista.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/crud/crud_analista.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth/security.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth/security.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_base_de_datos.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_base_de_datos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_schemas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -220,7 +227,20 @@
       <workItem from="1760665093585" duration="11762000" />
       <workItem from="1760685296497" duration="2179000" />
       <workItem from="1760734380951" duration="7864000" />
-      <workItem from="1760756084410" duration="2124000" />
+      <workItem from="1760756084410" duration="2531000" />
+      <workItem from="1760769473499" duration="102000" />
+      <workItem from="1760771673781" duration="16000" />
+      <workItem from="1760771825581" duration="1128000" />
+      <workItem from="1761014308827" duration="641000" />
+      <workItem from="1761020461915" duration="1465000" />
+      <workItem from="1761443773557" duration="246000" />
+      <workItem from="1761452761954" duration="1293000" />
+      <workItem from="1761622186046" duration="1561000" />
+      <workItem from="1761687541893" duration="978000" />
+      <workItem from="1761699553475" duration="48000" />
+      <workItem from="1761800682576" duration="629000" />
+      <workItem from="1761973249740" duration="5796000" />
+      <workItem from="1762014449309" duration="8845000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -462,7 +482,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760739758150</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="AGENTE INTELIGENTE V7.3&#10;BUGFIX CREACION DE ANALISTAS">
+      <option name="closed" value="true" />
+      <created>1760759661105</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1760759661105</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -480,7 +508,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="AGENTE INTELIGENTE V1.1.1" />
     <MESSAGE value="requirements.txt AÑADIDO" />
     <MESSAGE value="AGENTE INTELIGENTE V2.0.0" />
     <MESSAGE value="AGENTE INTELIGENTE V2.1.0" />
@@ -505,12 +532,13 @@
     <MESSAGE value="AGENTE INTELIGENTE V7.1&#10;LOGIN ACCESIBLE PARA CLIENTE GMAIL TOMANDO AMBOS ROLES" />
     <MESSAGE value="AGENTE INTELIGENTE V7.2&#10;BUGFIX ESTADOS INCOMPATIBLES" />
     <MESSAGE value="AGENTE INTELIGENTE V7.2.1&#10;BUGFIX ESTADOS INCOMPATIBLES EXTRAS" />
-    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V7.2.1&#10;BUGFIX ESTADOS INCOMPATIBLES EXTRAS" />
+    <MESSAGE value="AGENTE INTELIGENTE V7.3&#10;BUGFIX CREACION DE ANALISTAS" />
+    <option name="LAST_COMMIT_MESSAGE" value="AGENTE INTELIGENTE V7.3&#10;BUGFIX CREACION DE ANALISTAS" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$orquestacion_agente_inteligente.coverage" NAME="orquestacion_agente_inteligente Coverage Results" MODIFIED="1757151758716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/orquestacion" />
-    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1760756260072" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$AgenteInteligenteSoporte.coverage" NAME="AgenteInteligenteSoporte Coverage Results" MODIFIED="1762026978857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test.coverage" NAME="test Coverage Results" MODIFIED="1757151574330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
