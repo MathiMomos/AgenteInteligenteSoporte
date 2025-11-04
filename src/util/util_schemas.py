@@ -1,8 +1,9 @@
-# src/util_schemas.py
+# src/util/util_schemas.py
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 import datetime
+
 
 ### Esquemas para Autenticación
 
@@ -60,6 +61,7 @@ class ChatRequest(BaseModel):
         description="El ID único de la conversación para mantener el historial."
     )
 
+
 class ChatResponse(BaseModel):
     """
     Define la estructura de la respuesta del endpoint de chat.
@@ -67,11 +69,13 @@ class ChatResponse(BaseModel):
     response: str = Field(..., description="La respuesta generada por el agente.")
     thread_id: str = Field(..., description="El ID de la conversación para seguir el hilo.")
 
+
 # === Esquemas para Analista (Bandeja & Detalle) ===
 
 class AnalystMessage(BaseModel):
     role: str
     content: str
+
 
 class AnalystTicketItem(BaseModel):
     id_ticket: int
@@ -82,11 +86,13 @@ class AnalystTicketItem(BaseModel):
     date: Optional[str] = None  # ISO o dd/mm/aaaa
     updated_at: Optional[datetime.datetime] = None
 
+
 class AnalystTicketPage(BaseModel):
     items: List[AnalystTicketItem]
     total: int
     limit: int
     offset: int
+
 
 class AnalystTicketDetail(BaseModel):
     id_ticket: int
@@ -104,37 +110,35 @@ class AnalystTicketDetail(BaseModel):
     description: Optional[str] = None
     escalation_reason: Optional[str] = None
 
-# En src/util/util_schemas.py
 
 class DerivarTicketRequest(BaseModel):
     motivo: str = Field(..., min_length=10, description="El motivo por el cual se deriva el ticket.")
 
-# En src/util/util_schemas.py
+
 class UpdateTicketStatusRequest(BaseModel):
     status: str
     description: Optional[str] = None
     level: Optional[str] = None
 
-# Admin ==================================
-
-# src/util_schemas.py
-from pydantic import BaseModel, Field
-from typing import List, Optional
-import uuid
-import datetime
-
-
-# ... (todos los schemas de Auth, Chat y Analista van aquí) ...
-# ... (GoogleLoginRequest, Token, TokenData, ChatRequest, etc.) ...
 
 # =======================================================================
-# @section NUEVOS SCHEMAS PARA EL PANEL DE ADMINISTRADOR
+# @section SCHEMAS PARA EL PANEL DE ADMINISTRADOR
 # =======================================================================
-
 
 class PromptUpdate(BaseModel):
     nuevo_texto: str = Field(..., min_length=50)
 
+
+class Prompt(BaseModel):
+    """
+    Schema de SALIDA para ver el prompt actual.
+    CORREGIDO: Usa 'descripcion' en lugar de 'contenido'
+    """
+    id_prompt: int
+    descripcion: str
+
+    class Config:
+        from_attributes = True
 
 
 class ServicioCreate(BaseModel):
@@ -146,7 +150,6 @@ class Servicio(BaseModel):
     nombre: str
 
 
-
 class Cliente(BaseModel):
     id_cliente: str
     nombre: str
@@ -154,11 +157,19 @@ class Cliente(BaseModel):
 
 class ClienteCreate(BaseModel):
     """
-    Schema de ENTRADA para crear un nuevo cliente.
-    Ahora incluye UN solo dominio.
+    Schema de ENTRADA para crear/actualizar un cliente.
+    Incluye UN solo dominio.
     """
     nombre_cliente: str = Field(..., min_length=1)
     servicios_ids: List[str] = Field(..., min_length=1, description="Lista de IDs de servicios (UUIDs).")
-
-    # --- CAMPO MODIFICADO ---
     dominio: str = Field(..., min_length=3, description="El dominio único del cliente (ej: 'empresa.com').")
+
+
+class ClienteDetail(BaseModel):
+    """
+    Schema de SALIDA para ver el detalle de un cliente.
+    """
+    id_cliente: str
+    nombre: str
+    dominio: str
+    servicios: List[Servicio]
