@@ -17,7 +17,7 @@ import uuid
 ADMIN_DEPENDENCY = Depends(security.get_current_admin_user)
 
 router = APIRouter(
-    prefix="/api/admin",
+   
     tags=["Administración"],
     dependencies=[ADMIN_DEPENDENCY]
 )
