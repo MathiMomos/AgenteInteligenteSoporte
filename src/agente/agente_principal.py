@@ -80,7 +80,7 @@ def get_agent_executor(db: Session, user_info: sch.TokenData, thread_id: str):
         - *Validación de Datos Obligatorios:* Antes de crear el ticket, *DEBE* asegurarse de conocer los siguientes datos: Título, Descripción, Categoría, Ubicación, Tipo y Prioridad. Si falta la *Ubicación* o el detalle del problema, *DEBE preguntar* al usuario para obtenerlos.
         - OBLIGATORIAMENTE debe preguntarle sobre todos los detalles que ha entendido del problema para confirmar que ha captado bien la situación. Los puntos a confirmar son:
             1. Su nombre y Entidad.
-            2. Su *Ubicación (id\_ubicacion)*.
+            2. Su *Ubicación (id_ubicacion)*.
             3. El *Título* del problema.
             4. La *Categoría* inferida.
             5. El *Grupo Técnico* que se le asignará (inferido automáticamente).

@@ -4,8 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="refactorizacion">
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="requirements.txt">
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/routes/admin.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tool/tool_conocimiento.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tool/tool_conocimiento.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/util_agente.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -247,7 +252,7 @@
       <workItem from="1762888271415" duration="640000" />
       <workItem from="1762905320874" duration="1064000" />
       <workItem from="1762906465342" duration="9000" />
-      <workItem from="1762907221984" duration="686000" />
+      <workItem from="1762907221984" duration="1278000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -521,7 +526,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762907689824</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="requirements.txt">
+      <option name="closed" value="true" />
+      <created>1762907942926</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1762907942926</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -539,7 +552,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="AGENTE INTELIGENTE V2.1.1 FUNCIONAL" />
     <MESSAGE value="AGENTE INTELIGENTE V2.2" />
     <MESSAGE value="AGENTE INTELIGENTE V3.0&#10;MAS INTELIGENTE QUE NUNCA" />
     <MESSAGE value="AGENTE INTELIGENTE V3.1&#10;AGENTES LEGACY EN CARPETA OLD" />
@@ -564,7 +576,8 @@
     <MESSAGE value="AGENTE INTELIGENTE V8&#10;MODULO ADMIN AÑADIDO" />
     <MESSAGE value="BRANCH TESINA UTP" />
     <MESSAGE value="refactorizacion" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactorizacion" />
+    <MESSAGE value="requirements.txt" />
+    <option name="LAST_COMMIT_MESSAGE" value="requirements.txt" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
