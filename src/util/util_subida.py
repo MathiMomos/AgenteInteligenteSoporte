@@ -70,8 +70,8 @@ def leerContenidoDeDocumento(rutaArchivo):
 
     # Nos conectamos al servicio
     servicio = DocumentAnalysisClient(
-        key.require("CONF_AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"),
-        AzureKeyCredential(key.require("CONF_AZURE_DOCUMENT_INTELLIGENCE_KEY")),
+        key.getkeyapi("CONF_AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"),
+        AzureKeyCredential(key.getkeyapi("CONF_AZURE_DOCUMENT_INTELLIGENCE_KEY")),
     )
 
     # Abrimos el documento que queremos analizar
@@ -138,9 +138,9 @@ def cargarArchivo(rutaDeArchivo=None, nombreDeBaseDeConocimiento: str = ""):
 
     # Nos conectamos a la base de conocimiento
     baseDeConocimiento = SearchClient(
-        f"https://{key.require("CONF_AZURE_SEARCH_SERVICE_NAME")}.search.windows.net",
+        f"https://{key.getkeyapi("CONF_AZURE_SEARCH_SERVICE_NAME")}.search.windows.net",
         nombreDeBaseDeConocimiento,
-        AzureKeyCredential(key.require("CONF_AZURE_SEARCH_KEY")),
+        AzureKeyCredential(key.getkeyapi("CONF_AZURE_SEARCH_KEY")),
     )
 
     # Insertamos los chunks en la base de conocimiento
@@ -184,6 +184,10 @@ def sincronizarBaseDeConocimiento(
                         carpetaDeErrores: str = os.path.join(
                             carpeta, "errores/", str(uuid.uuid4()) + "/"
                         )
+                        
+                    else: 
+                        carpetaDeErrores = "errores/" + str(uuid.uuid4()) + "/"
+                        
                     print(f"Moviendo archivo a carpeta de errores: {carpetaDeErrores}")
                     os.makedirs(carpetaDeErrores, exist_ok=True)
                     shutil.move(archivo, carpetaDeErrores)
