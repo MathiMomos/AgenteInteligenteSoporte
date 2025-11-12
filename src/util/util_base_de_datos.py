@@ -12,9 +12,9 @@ HOST = key.getkeyapi("PGHOST")
 PORT = key.getkeyapi("PGPORT")
 DB_NAME = key.getkeyapi("PGDATABASE")
 
-DATABASE_URL = (
-    f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/analyticsdb?sslmode=require"
-)
+DATABASE_URL = key.getkeyapi("DATABASE_URL")
+
+
 
 if not DATABASE_URL:
     # Si no encuentra la URL, detiene la aplicación para evitar errores

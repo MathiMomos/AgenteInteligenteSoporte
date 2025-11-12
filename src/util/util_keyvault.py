@@ -2,7 +2,7 @@ from azure.identity import DefaultAzureCredential
 
 from azure.keyvault.secrets import SecretClient
 
-vault_name = "analytics-soporte-kv"
+vault_name = "keylumin"
 KVUri = f"https://{vault_name}.vault.azure.net"
 
 credential = DefaultAzureCredential()
@@ -14,3 +14,5 @@ def getkeyapi(name: str) -> str:
     if secret.value is None:
         raise ValueError(f"Secret '{name}' does not have a value.")
     return secret.value
+
+
