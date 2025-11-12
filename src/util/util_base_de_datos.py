@@ -6,15 +6,7 @@ from sqlalchemy.orm import Session
 import os
 from src.util import util_keyvault as key
 
-USER = key.getkeyapi("PGUSER")
-PASSWORD = key.getkeyapi("PGPASSWORD")
-HOST = key.getkeyapi("PGHOST")
-PORT = key.getkeyapi("PGPORT")
-DB_NAME = key.getkeyapi("PGDATABASE")
-
-DATABASE_URL = key.getkeyapi("DATABASE_URL")
-
-
+DATABASE_URL = key.getkeyapi("CONF-DATABASE-LUMIN-URL")
 
 if not DATABASE_URL:
     # Si no encuentra la URL, detiene la aplicación para evitar errores
