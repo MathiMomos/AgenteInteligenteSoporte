@@ -32,7 +32,7 @@ from azure.search.documents import SearchClient
 from azure.ai.formrecognizer import DocumentAnalysisClient
 
 # Utilitario para crear un documento que pueda ser cortado, con el texto extraído
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 # Librería para controlar la ejecución del código
 import time
