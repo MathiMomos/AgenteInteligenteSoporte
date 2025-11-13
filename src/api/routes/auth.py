@@ -1,87 +1,114 @@
-from src.util import util_keyvault as key
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from google.oauth2 import id_token
-from google.auth.transport import requests as grequests
+# src/auth/auth.py
+import httpx
+import base64
+from fastapi import APIRouter, Depends, HTTPException, status
 
+# Importamos los schemas y utilidades que ya modificamos
 from src.util import util_schemas as sch
-from src.util import util_base_de_datos as db_utils
+from src.util import util_keyvault as key
 from src.auth import security
-from src.crud import crud_users
-from src.crud import crud_roles
 
 router = APIRouter()
 
 
-def verify_google_token(id_token_str: str) -> dict:
-    """Verifica el token de Google y devuelve la información del usuario."""
-    google_client_id = key.getkeyapi("GOOGLE-CLIENT-ID")
-    if not google_client_id:
-        raise HTTPException(status_code=500, detail="GOOGLE_CLIENT_ID no configurado")
-    try:
-        id_info = id_token.verify_oauth2_token(
-            id_token_str, grequests.Request(), google_client_id
+async def get_glpi_profile(username: str, password: str) -> dict:
+    """
+    Función auxiliar interna.
+    Valida credenciales contra GLPI y devuelve el perfil del usuario.
+    """
+    GLPI_URL = key.get_glpi_url()
+    APP_TOKEN = key.get_glpi_app_token()
+
+    # Preparamos el header de Basic Auth (codificado en Base64)
+    auth_string = f"{username}:{password}"
+    auth_bytes = auth_string.encode('utf-8')
+    auth_header_value = f"Basic {base64.b64encode(auth_bytes).decode('utf-8')}"
+
+    session_token = None
+    async with httpx.AsyncClient() as client:
+        try:
+            # --- PASO 1: Iniciar sesión con Basic Auth (usuario/pass) ---
+            headers_init = {
+                "App-Token": APP_TOKEN,
+                "Authorization": auth_header_value
+            }
+            resp_init = await client.get(f"{GLPI_URL}/initSession", headers=headers_init)
+
+            # Si el login (usuario/pass) es incorrecto, GLPI devuelve 401
+            resp_init.raise_for_status()
+            session_token = resp_init.json()["session_token"]
+
+            # --- PASO 2: Obtener el Perfil del Usuario ---
+            headers_profile = {
+                "App-Token": APP_TOKEN,
+                "Session-Token": session_token
+            }
+            resp_profile = await client.get(
+                f"{GLPI_URL}/getActiveProfile",
+                headers=headers_profile
+            )
+            resp_profile.raise_for_status()
+
+            return resp_profile.json()  # ¡Éxito! Devuelve el perfil
+
+        except httpx.HTTPStatusError as e:
+            # Error de credenciales
+            if e.response.status_code == 401:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Usuario o contraseña de GLPI incorrectos."
+                )
+            # Otro error de la API de GLPI
+            print(f"Error API GLPI: {e.response.text}")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Error al contactar la API de GLPI: {e.response.text}"
+            )
+        except Exception as e:
+            # Error de conexión (ej. no se puede resolver el dominio)
+            print(f"Error HTTPX: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="Error de conexión con el servidor GLPI."
+            )
+        finally:
+            # --- PASO 3: Cerrar Sesión (importante) ---
+            if session_token:
+                headers_kill = {"App-Token": APP_TOKEN, "Session-Token": session_token}
+                # Usamos 'await' también para la llamada de cierre
+                await client.get(f"{GLPI_URL}/killSession", headers=headers_kill)
+
+
+@router.post("/login", response_model=sch.Token, tags=["Auth"])
+async def login_con_usuario_y_pass(
+        form_data: sch.UserPassLoginRequest
+):
+    # 1. Validar contra GLPI y obtener perfil
+    glpi_profile = await get_glpi_profile(form_data.username, form_data.password)
+
+    # 2. Extraer datos del perfil
+    # (Los nombres de campo pueden variar, ajústalos según la respuesta de tu /getActiveProfile)
+    user_id = glpi_profile.get("id")
+    user_name = glpi_profile.get("name")  # ej: 'jperez'
+    first_name = glpi_profile.get("firstname", "")
+    last_name = glpi_profile.get("lastname", "")
+    email = glpi_profile.get("email")
+
+    if not user_id or not email or not user_name:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="El perfil de GLPI devuelto no contiene 'id', 'name' o 'email'."
         )
-        if id_info.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
-            raise HTTPException(status_code=401, detail="Issuer inválido")
-        return id_info
-    except ValueError as e:
-        raise HTTPException(status_code=401, detail=f"Token de Google inválido: {e}")
 
-
-@router.post("/google/login/colaborador", response_model=sch.Token, tags=["Auth"])
-async def google_login_colaborador(
-        request: sch.GoogleLoginRequest,
-        db: Session = Depends(db_utils.obtener_bd),
-):
-    id_info = verify_google_token(request.id_token)
-    persona = crud_users.get_or_create_from_external(db_session=db, id_info=id_info)
-    colaborador = crud_roles.get_or_create_collaborator_role(db, persona)
-
-    db.commit()  # <-- CORRECCIÓN CLAVE
-
-    cliente = db.query(db_utils.Cliente).filter_by(id_cliente=colaborador.id_cliente).first()
-    servicios_contratados_db = (
-        db.query(db_utils.Servicio)
-        .join(db_utils.ClienteServicio)
-        .filter(db_utils.ClienteServicio.id_cliente == colaborador.id_cliente)
-        .all()
-    )
-    servicios_para_token = [sch.ServicioInfo(id_servicio=str(s.id_servicio), nombre=s.nombre) for s in
-                            servicios_contratados_db]
-
+    # 3. Crear el "pasaporte" (TokenData) con los datos de GLPI
     token_data_payload = sch.TokenData(
-        correo=id_info.get("email"),
-        nombre=id_info.get("name"),
-        persona_id=str(persona.id_persona),
-        colaborador_id=str(colaborador.id_colaborador),
-        cliente_id=str(colaborador.id_cliente),
-        cliente_nombre=cliente.nombre if cliente else "Cliente Desconocido",
-        servicios_contratados=servicios_para_token
+        glpi_id=user_id,
+        nombre=f"{first_name} {last_name}".strip() or user_name,
+        correo=email,
+        glpi_username=user_name
     )
+
+    # 4. Crear y devolver nuestro JWT usando la función de security.py
     access_token = security.create_access_token(data=token_data_payload)
-    return {"access_token": access_token, "token_type": "bearer"}
 
-
-@router.post("/google/login/analista", response_model=sch.Token, tags=["Auth"])
-async def google_login_analista(
-        request: sch.GoogleLoginRequest,
-        db: Session = Depends(db_utils.obtener_bd),
-):
-    id_info = verify_google_token(request.id_token)
-    persona = crud_users.get_or_create_from_external(db_session=db, id_info=id_info)
-    analista = crud_roles.get_or_create_analyst_role(db, persona)
-
-    db.commit()  # <-- CORRECCIÓN CLAVE
-
-    token_data_payload = sch.TokenData(
-        correo=id_info.get("email"),
-        nombre=id_info.get("name"),
-        persona_id=str(persona.id_persona),
-        colaborador_id="00000000-0000-0000-0000-000000000000",
-        cliente_id="00000000-0000-0000-0000-000000000000",
-        cliente_nombre="ANALYTICS",
-        servicios_contratados=[]
-    )
-    access_token = security.create_access_token(data=token_data_payload)
     return {"access_token": access_token, "token_type": "bearer"}

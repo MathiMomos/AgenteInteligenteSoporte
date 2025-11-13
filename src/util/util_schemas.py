@@ -7,49 +7,38 @@ import datetime
 
 ### Esquemas para Autenticación
 
-class GoogleLoginRequest(BaseModel):
-    """
-    Define la estructura que esperamos del frontend con el token de id de Google.
-    """
-    id_token: str
+# ¡NUEVO! Esquema para el login de usuario/contraseña
+class UserPassLoginRequest(BaseModel):
+    username: str
+    password: str
 
 
 class Token(BaseModel):
     """
-    Define la estructura de la respuesta que nuestra API envía al frontend
-    después de un login exitoso. Contiene nuestro propio token JWT.
+    La respuesta de nuestro login: un JWT.
+    (Se mantiene igual)
     """
     access_token: str
     token_type: str
 
 
-class ServicioInfo(BaseModel):
-    """
-    Una representación simple de un servicio contratado.
-    """
-    id_servicio: str
-    nombre: str
-
-
+# --- ¡NUEVO TOKEN DATA! ---
 class TokenData(BaseModel):
     """
     Define los datos que guardamos dentro de nuestro JWT.
-    Es el "pasaporte" completo de un usuario Colaborador.
+    Es el "pasaporte" de un usuario validado por GLPI.
     """
-    # --- IDs para la Lógica del Backend y las Herramientas ---
-    persona_id: str
-    colaborador_id: str
-    cliente_id: str
+    # --- Datos de GLPI para el Contexto del Agente ---
+    glpi_id: int  # ID de usuario en GLPI
+    nombre: str  # Nombre completo (ej. "Juan Pérez")
+    correo: str
+    glpi_username: str  # El 'login' de GLPI (ej. 'jperez')
 
-    # --- Datos para la Conversación y Contexto del Agente ---
-    nombre: str  # Viene de la tabla External
-    correo: str  # Viene de la tabla External
-    cliente_nombre: str  # Viene de la tabla Cliente
-
-    servicios_contratados: List[ServicioInfo]
+    # 'sub' (correo) y 'exp' (expiración) se añaden por separado
 
 
 ### Esquemas para el Chat
+# (Se mantienen exactamente igual)
 
 class ChatRequest(BaseModel):
     """
@@ -69,107 +58,4 @@ class ChatResponse(BaseModel):
     response: str = Field(..., description="La respuesta generada por el agente.")
     thread_id: str = Field(..., description="El ID de la conversación para seguir el hilo.")
 
-
-# === Esquemas para Analista (Bandeja & Detalle) ===
-
-class AnalystMessage(BaseModel):
-    role: str
-    content: str
-
-
-class AnalystTicketItem(BaseModel):
-    id_ticket: int
-    subject: str
-    user: Optional[str] = None
-    service: Optional[str] = None
-    status: Optional[str] = None
-    date: Optional[str] = None  # ISO o dd/mm/aaaa
-    updated_at: Optional[datetime.datetime] = None
-
-
-class AnalystTicketPage(BaseModel):
-    items: List[AnalystTicketItem]
-    total: int
-    limit: int
-    offset: int
-
-
-class AnalystTicketDetail(BaseModel):
-    id_ticket: int
-    subject: str
-    type: Optional[str] = None
-    user: Optional[str] = None
-    company: Optional[str] = None
-    service: Optional[str] = None
-    email: Optional[str] = None
-    date: Optional[str] = None
-    status: Optional[str] = None
-    conversation: List[AnalystMessage]
-    updated_at: Optional[datetime.datetime] = Field(None, description="Fecha de la última actualización del ticket")
-    level: Optional[str] = None
-    description: Optional[str] = None
-    escalation_reason: Optional[str] = None
-
-
-class DerivarTicketRequest(BaseModel):
-    motivo: str = Field(..., min_length=10, description="El motivo por el cual se deriva el ticket.")
-
-
-class UpdateTicketStatusRequest(BaseModel):
-    status: str
-    description: Optional[str] = None
-    level: Optional[str] = None
-
-
-# =======================================================================
-# @section SCHEMAS PARA EL PANEL DE ADMINISTRADOR
-# =======================================================================
-
-class PromptUpdate(BaseModel):
-    nuevo_texto: str = Field(..., min_length=50)
-
-
-class Prompt(BaseModel):
-    """
-    Schema de SALIDA para ver el prompt actual.
-    CORREGIDO: Usa 'descripcion' en lugar de 'contenido'
-    """
-    id_prompt: int
-    descripcion: str
-
-    class Config:
-        from_attributes = True
-
-
-class ServicioCreate(BaseModel):
-    nombre: str
-
-
-class Servicio(BaseModel):
-    id_servicio: str
-    nombre: str
-
-
-class Cliente(BaseModel):
-    id_cliente: str
-    nombre: str
-
-
-class ClienteCreate(BaseModel):
-    """
-    Schema de ENTRADA para crear/actualizar un cliente.
-    Incluye UN solo dominio.
-    """
-    nombre_cliente: str = Field(..., min_length=1)
-    servicios_ids: List[str] = Field(..., min_length=1, description="Lista de IDs de servicios (UUIDs).")
-    dominio: str = Field(..., min_length=3, description="El dominio único del cliente (ej: 'empresa.com').")
-
-
-class ClienteDetail(BaseModel):
-    """
-    Schema de SALIDA para ver el detalle de un cliente.
-    """
-    id_cliente: str
-    nombre: str
-    dominio: str
-    servicios: List[Servicio]
+# (TODOS los demás esquemas de Analyst, Servicio, Cliente, etc., han sido eliminados)
