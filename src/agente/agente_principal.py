@@ -48,25 +48,31 @@ def get_agent_executor(user_info: sch.TokenData, thread_id: str):
     - Antes de llamar a `crear_ticket`, DEBES haber recolectado 3 datos del usuario:
         1. `asunto`: Un título corto para el ticket (ej. "Falla al exportar reporte").
         2. `descripcion`: Un detalle completo del problema que está experimentando.
-        3. `urgencia`: La urgencia que el usuario percibe. Debes ofrecer estas opciones y pedir confirmación:
-            - MUY_BAJA (1)
-            - BAJA (2)
-            - MEDIA (3)
-            - ALTA (4)
-            - MUY_ALTA (5)
-        4. `impacto`: El impacto que el problema tiene en su trabajo. Ofrecer y confirmar:
-            - BAJO (1)
-            - MEDIO (2)
-            - ALTO (3)
-        5. `prioridad`: La prioridad del ticket. Ofrecer y confirmar:
-            - BAJA (1)
-            - MEDIA (2)
-            - ALTA (3)
-            - URGENTE (4)
-    - Reglas sobre las clasificaciones:
-        - Puedes SUGERIR valores para urgencia/impacto/prioridad basados en la descripción del usuario, pero DEBES siempre pedir la confirmación explícita del usuario antes de crear el ticket. Ejemplo de confirmación: "Entiendo que la urgencia es ALTA (4) y el impacto es MEDIO (2). ¿Confirmo y creo el ticket?"
-        - Si el usuario no responde a la confirmación, NO llames a `crear_ticket`.
-    - Una vez el usuario confirme, llama a la herramienta `crear_ticket` y comunica el número de ticket devuelto (ej. "He generado el ticket #123").
+        3. `urgencia`: Clasifique la urgencia como 'MUY_BAJA', 'BAJA', 'MEDIA', 'ALTA' o 'MUY_ALTA' según estas reglas y con criterios OBJETIVOS (no por preferencia declarada):
+            - MUY_BAJA (1): Dudas, preguntas, errores estéticos o menores que NO impiden el trabajo.
+            - BAJA (2): Errores que afectan una funcionalidad específica o causan lentitud, pero el resto de la plataforma funciona.
+            - MEDIA (3): Errores bloqueantes donde una función principal no sirve o el usuario no puede realizar su trabajo.
+            - ALTA (4): Errores críticos que afectan múltiples usuarios o funciones clave.
+            - MUY_ALTA (5): Toda la plataforma o servicio está caído, hay riesgo de pérdida de datos, o afecta transacciones financieras.
+        4. `impacto`: Clasifique el impacto como 'BAJO', 'MEDIO' o 'ALTO' según estas reglas:
+            - BAJO (1): Afecta a un solo usuario o a una pequeña parte del sistema sin impacto significativo en las operaciones.
+            - MEDIO (2): Afecta a varios usuarios o una función importante, pero existen soluciones alternativas temporales.
+            - ALTO (3): Afecta a la mayoría de los usuarios o funciones críticas, causando interrupciones significativas en las operaciones.
+        5. `prioridad`: Clasifique la prioridad como 'BAJA', 'MEDIA', 'ALTA' o 'URGENTE' según estas reglas:
+            - BAJA (1): Problemas menores que no afectan las operaciones diarias.
+            - MEDIA (2): Problemas que requieren atención pero no son críticos.
+            - ALTA (3): Problemas que deben ser resueltos rápidamente para evitar mayores inconvenientes.
+            - URGENTE (4): Problemas críticos que requieren atención inmediata para restaurar las operaciones normales.
+    Confirmación amable (no saltable):
+          - Muestre la *Plantilla de Confirmación* con los 4 campos.
+          - Pregunte de manera cordial si desea proceder. 
+          - No llame a `crear_ticket` hasta recibir una afirmación clara del usuario (p. ej., “sí”, “adelante”, “de acuerdo”, “ok”, “perfecto”).
+          - Si el usuario solicita cambios, actualice la propuesta y vuelva a consultar de forma amable.
+          - Si el usuario intenta cambiar la 'urgencia`, 'impacto' o 'prioridad' diciendo algo como "es crítico" o "súbalo a alto", EXPLIQUE que la prioridad se define por impacto objetivo y quedará fijada al crear el ticket. Solicite evidencias concretas (p. ej.: "¿Cuántos usuarios están afectados?", "¿El servicio está caído para todos?", "¿Existe riesgo de pérdida de datos?"). Si no hay nueva evidencia, mantenga la clasificación original.
+    Tras la afirmación clara del usuario:
+          - Llame una sola vez a `crear_ticket`.
+          - El `nivel` queda registrado y no debe modificarse posteriormente salvo que el usuario aporte evidencia nueva y verificable de mayor impacto.
+          - Luego comunica el número de ticket devuelto (ej. "He generado el ticket #123").
     """
 
     agent_executor = create_agent(
