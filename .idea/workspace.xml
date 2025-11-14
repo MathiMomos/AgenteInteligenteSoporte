@@ -4,25 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="subida">
+    <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="refactorizacion glpi integracion">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/routes/analyst.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/routes/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/routes/chat.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes/chat.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/auth/security.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth/security.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/old_prompt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/crud_admin.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/crud_analista.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/crud_escalados.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/crud_roles.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/crud_tickets.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/crud/crud_users.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tool/tool_creacion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tool/tool_creacion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_base_de_datos.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/util/util_keyvault.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_keyvault.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_schemas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,6 +30,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -269,7 +254,7 @@
       <workItem from="1762913472675" duration="10000" />
       <workItem from="1762913489405" duration="783000" />
       <workItem from="1762914386052" duration="3632000" />
-      <workItem from="1763057203718" duration="7725000" />
+      <workItem from="1763057203718" duration="10662000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -575,7 +560,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762914421922</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="refactorizacion glpi integracion">
+      <option name="closed" value="true" />
+      <created>1763075610437</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1763075610437</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -593,7 +586,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="AGENTE INTELIGENTE V3.2&#10;RESPUESTAS MAS COMPLETAS" />
     <MESSAGE value="AGENTE INTELIGENTE V4.0&#10;TERMINADO FALTA TESTEAR" />
     <MESSAGE value="AGENTE INTELIGENTE V4.2&#10;AHORA SI TERMINADO FALTA ASEGURAR CONEXION CON FRONTEND&#10;SE AÑADIO FECHA DE ACTUALIZACION" />
     <MESSAGE value="AGENTE INTELIGENTE V4.3&#10;&#10;FINAL" />
@@ -618,7 +610,8 @@
     <MESSAGE value="corre" />
     <MESSAGE value="rag" />
     <MESSAGE value="subida" />
-    <option name="LAST_COMMIT_MESSAGE" value="subida" />
+    <MESSAGE value="refactorizacion glpi integracion" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactorizacion glpi integracion" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AgenteInteligenteSoporte$test_retriever.coverage" NAME="test_retriever Coverage Results" MODIFIED="1757150905769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
