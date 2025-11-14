@@ -12,7 +12,6 @@ from src.tool.tool_conocimiento import get_conocimiento_tool
 def get_agent_executor(user_info: sch.TokenData, thread_id: str):
     """
     Construye un agente ReAct que orquesta las herramientas.
-    YA NO RECIBE db: Session.
     """
     llm = obtener_llm()
 
@@ -23,8 +22,6 @@ def get_agent_executor(user_info: sch.TokenData, thread_id: str):
         get_conocimiento_tool()
     ]
 
-    # --- NUEVO PROMPT SIMPLIFICADO ---
-    # Este prompt se enfoca solo en GLPI y la Base de Conocimiento.
     system_prompt = """
     ## Identidad y Objetivo
     - Eres un Agente Inteligente de Soporte Técnico.
@@ -65,16 +62,12 @@ def get_agent_executor(user_info: sch.TokenData, thread_id: str):
     return agent_executor
 
 
-# ¡IMPORTANTE! Esta función ahora debe ser 'async'
 async def handle_query(query: str, thread_id: str, user_info: sch.TokenData) -> str:
     """
     Interfaz pública que ejecuta el agente principal con la consulta del usuario.
-    YA NO RECIBE db: Session.
     """
-    # Ya no recibe 'db'
     agent_with_tools = get_agent_executor(user_info=user_info, thread_id=thread_id)
 
-    # Actualizamos el contexto para que coincida con el nuevo sch.TokenData
     contextual_query = f"""
     CONTEXTO DEL USUARIO ACTUAL:
     - Nombre del usuario: {user_info.nombre}
@@ -86,7 +79,21 @@ async def handle_query(query: str, thread_id: str, user_info: sch.TokenData) -> 
     inputs = {"messages": [("system", contextual_query), ("user", query)]}
     config = {"configurable": {"thread_id": thread_id}}
 
-    # ¡CAMBIO! Usamos 'ainvoke' (asíncrono) porque 'tool_creacion' es 'async'
     result = await agent_with_tools.ainvoke(inputs, config)
 
-    return result["messages"][-1].content
+    # --- ESTA ES LA CORRECCIÓN CLAVE ---
+    response_object = result["messages"][-1].content
+
+    try:
+        # El log muestra que response_object es una lista: [{'type': 'text', 'text': '...'}]
+        # Extraemos el texto del primer elemento
+        final_text = response_object[0].get("text", "")
+        if not final_text:
+            final_text = str(response_object)
+
+        return final_text
+
+    except Exception as e:
+        print(f"Error al parsear la respuesta del agente: {e}")
+        # Si no es la lista que esperamos, devolvemos el contenido como string
+        return str(response_object)
