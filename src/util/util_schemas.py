@@ -45,10 +45,17 @@ class ChatRequest(BaseModel):
     Define la estructura de una petición al endpoint de chat.
     """
     message: str = Field(..., description="El mensaje enviado por el usuario.")
-    thread_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
-        description="El ID único de la conversación para mantener el historial."
+
+    # --- INICIO DE LA CORRECCIÓN ---
+    # Cambiamos 'str = Field(default_factory...)'
+    # por 'Optional[str] = Field(default=None...)'
+    #
+    # Esto le dice a Pydantic que 'thread_id' puede ser un string O puede ser nulo (None).
+    thread_id: Optional[str] = Field(
+        default=None,
+        description="El ID único de la conversación. Enviar 'null' o 'None' si es el primer mensaje."
     )
+    # --- FIN DE LA CORRECCIÓN ---
 
 
 class ChatResponse(BaseModel):
