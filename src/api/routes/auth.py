@@ -10,19 +10,18 @@ from src.auth import security
 
 router = APIRouter()
 
-# Mantenemos el User-Agent falso, ya que solucionó el error de conexión anterior
+# Mantenemos el User-Agent falso, ya que funcionó
 FAKE_USER_AGENT = {"User-Agent": "python-requests/2.28.1"}
 
 
 async def get_glpi_profile(username: str, password: str) -> dict:
     """
     Función auxiliar interna.
-    Valida credenciales contra GLPI y devuelve el perfil del usuario.
+    Valida credenciales contra GLPI y devuelve LA SESIÓN COMPLETA.
     """
     GLPI_URL = key.get_glpi_url()
     APP_TOKEN = key.get_glpi_app_token()
 
-    # Preparamos el header de Basic Auth (codificado en Base64)
     auth_string = f"{username}:{password}"
     auth_bytes = auth_string.encode('utf-8')
     auth_header_value = f"Basic {base64.b64encode(auth_bytes).decode('utf-8')}"
@@ -30,7 +29,7 @@ async def get_glpi_profile(username: str, password: str) -> dict:
     session_token = None
     async with httpx.AsyncClient() as client:
         try:
-            # --- PASO 1: Iniciar sesión con Basic Auth (usuario/pass) ---
+            # --- PASO 1: Iniciar sesión (esto estaba bien) ---
             headers_init = {
                 "App-Token": APP_TOKEN,
                 "Authorization": auth_header_value,
@@ -40,19 +39,19 @@ async def get_glpi_profile(username: str, password: str) -> dict:
             resp_init.raise_for_status()
             session_token = resp_init.json()["session_token"]
 
-            # --- PASO 2: Obtener el Perfil del Usuario ---
+            # --- PASO 2: Obtener la Sesión Completa (¡CORREGIDO!) ---
             headers_profile = {
                 "App-Token": APP_TOKEN,
                 "Session-Token": session_token,
                 **FAKE_USER_AGENT
             }
             resp_profile = await client.get(
-                f"{GLPI_URL}/getActiveProfile",
+                f"{GLPI_URL}/getFullSession",  # <-- CAMBIADO DE getActiveProfile
                 headers=headers_profile
             )
             resp_profile.raise_for_status()
 
-            return resp_profile.json()  # ¡Éxito! Devuelve el perfil
+            return resp_profile.json()  # ¡Éxito! Devuelve el JSON de la sesión completa
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
@@ -85,38 +84,43 @@ async def get_glpi_profile(username: str, password: str) -> dict:
 async def login_con_usuario_y_pass(
         form_data: sch.UserPassLoginRequest
 ):
-    # 1. Validar contra GLPI y obtener perfil
-    glpi_profile = await get_glpi_profile(form_data.username, form_data.password)
+    # 1. Validar contra GLPI y obtener sesión completa
+    session_data = await get_glpi_profile(form_data.username, form_data.password)
 
     # (Debug print)
-    print("====== PERFIL DE GLPI RECIBIDO ======")
-    print(glpi_profile)
-    print("=======================================")
+    print("====== SESIÓN COMPLETA DE GLPI RECIBIDA ======")
+    print(session_data)
+    print("==============================================")
 
     # --- INICIO DE LA CORRECCIÓN ---
 
-    # 2. Extraer datos del perfil (¡CORREGIDO!)
-    user_id = glpi_profile.get("id")
+    # 2. Navegar la estructura JSON anidada para encontrar el perfil de usuario
+    # La estructura es: { "session": { "glpiuser": { ... } } }
+    user_profile = session_data.get("session", {}).get("glpiuser", {})
 
-    # Buscamos 'login' (nombre de usuario) o 'name' como alternativa
-    user_name = glpi_profile.get("login") or glpi_profile.get("name")
+    if not user_profile:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="La respuesta de GLPI no contenía datos de sesión del usuario (session.glpiuser)."
+        )
 
-    # Buscamos 'mail' (correo) o 'email' como alternativa
-    email = glpi_profile.get("mail") or glpi_profile.get("email")
-
-    first_name = glpi_profile.get("firstname", "")
-    last_name = glpi_profile.get("lastname") or glpi_profile.get("realname", "")
+    # 3. Extraer datos del perfil (¡CORREGIDO!)
+    # Ahora buscamos dentro de 'user_profile'
+    user_id = user_profile.get("id")
+    user_name = user_profile.get("name")  # 'name' en getFullSession es el login (ej. 'jperez')
+    email = user_profile.get("mail")  # 'mail' es el correo
+    first_name = user_profile.get("firstname", "")
+    last_name = user_profile.get("lastname") or user_profile.get("realname", "")
     full_name = f"{first_name} {last_name}".strip()
 
-    # 3. Validación (¡CORREGIDA!)
+    # 4. Validación (¡CORREGIDA!)
     if not user_id or not email or not user_name:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            # Mensaje de error actualizado
-            detail="El perfil de GLPI devuelto no contiene 'id', 'login'/'name' o 'mail'/'email'."
+            detail="El perfil de usuario de GLPI no contiene 'id', 'name' (login) o 'mail'."
         )
 
-    # 4. Crear el "pasaporte" (TokenData) con los datos de GLPI
+    # 5. Crear el "pasaporte" (TokenData)
     token_data_payload = sch.TokenData(
         glpi_id=user_id,
         nombre=full_name or user_name,  # Usar nombre completo, o el username como fallback
@@ -126,7 +130,7 @@ async def login_con_usuario_y_pass(
 
     # --- FIN DE LA CORRECCIÓN ---
 
-    # 5. Crear y devolver nuestro JWT
+    # 6. Crear y devolver nuestro JWT
     access_token = security.create_access_token(data=token_data_payload)
 
     return {"access_token": access_token, "token_type": "bearer"}
