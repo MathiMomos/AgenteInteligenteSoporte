@@ -48,11 +48,25 @@ def get_agent_executor(user_info: sch.TokenData, thread_id: str):
     - Antes de llamar a `crear_ticket`, DEBES haber recolectado 3 datos del usuario:
         1. `asunto`: Un título corto para el ticket (ej. "Falla al exportar reporte").
         2. `descripcion`: Un detalle completo del problema que está experimentando.
-        3. `urgencia`: La urgencia que el usuario percibe. Debes clasificarla como: MUY_BAJA (1), BAJA (2), MEDIA (3), ALTA (4), o MUY_ALTA (5).
-        4. `impacto`: El impacto que el problema tiene en su trabajo. Debes clasificarlo como: BAJO (1), MEDIO (2), o ALTO (3).
-        5. `prioridad`: La prioridad del ticket. Debes clasificarla como: BAJA (1), MEDIA (2), ALTA (3), o URGENTE (4).
-    - Una vez tengas estos 3 datos, confirma con el usuario (ej. "Entendido, crearé un ticket con urgencia ALTA...") y llama a la herramienta `crear_ticket`.
-    - Informa al usuario el número de ticket que te devolvió la herramienta (ej. "He generado el ticket #123").
+        3. `urgencia`: La urgencia que el usuario percibe. Debes ofrecer estas opciones y pedir confirmación:
+            - MUY_BAJA (1)
+            - BAJA (2)
+            - MEDIA (3)
+            - ALTA (4)
+            - MUY_ALTA (5)
+        4. `impacto`: El impacto que el problema tiene en su trabajo. Ofrecer y confirmar:
+            - BAJO (1)
+            - MEDIO (2)
+            - ALTO (3)
+        5. `prioridad`: La prioridad del ticket. Ofrecer y confirmar:
+            - BAJA (1)
+            - MEDIA (2)
+            - ALTA (3)
+            - URGENTE (4)
+    - Reglas sobre las clasificaciones:
+        - Puedes SUGERIR valores para urgencia/impacto/prioridad basados en la descripción del usuario, pero DEBES siempre pedir la confirmación explícita del usuario antes de crear el ticket. Ejemplo de confirmación: "Entiendo que la urgencia es ALTA (4) y el impacto es MEDIO (2). ¿Confirmo y creo el ticket?"
+        - Si el usuario no responde a la confirmación, NO llames a `crear_ticket`.
+    - Una vez el usuario confirme, llama a la herramienta `crear_ticket` y comunica el número de ticket devuelto (ej. "He generado el ticket #123").
     """
 
     agent_executor = create_agent(
