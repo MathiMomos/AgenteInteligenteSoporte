@@ -1,12 +1,13 @@
 fastapi
-SQLAlchemy
-protobuf
+httpx
 jose
 python-jose
 pydantic
 langchain
+SQLAlchemy
 langchain-core
 langchain-google-genai
 langgraph
+langchain-text-splitters
 azure-core
 langchain-community
