@@ -13,6 +13,8 @@ async def chat_with_agent(
         request: sch.ChatRequest,
         current_user: sch.TokenData = Depends(security.get_current_user),
 ):
+    print(request)
+    print(current_user)
     thread_id = request.thread_id or str(uuid.uuid4())
     print(
         f"[THREAD {thread_id}] Chat iniciado por: {current_user.nombre}"
@@ -23,5 +25,6 @@ async def chat_with_agent(
         thread_id=thread_id,
         user_info=current_user
     )
+    print(response_text)
 
     return sch.ChatResponse(response=response_text, thread_id=thread_id)
