@@ -70,8 +70,8 @@ def leerContenidoDeDocumento(rutaArchivo):
 
     # Nos conectamos al servicio
     servicio = DocumentAnalysisClient(
-        key.getkeyapi("CONF_AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"),
-        AzureKeyCredential(key.getkeyapi("CONF_AZURE_DOCUMENT_INTELLIGENCE_KEY")),
+        "https://dilumin.cognitiveservices.azure.com/",
+        AzureKeyCredential(key.getkeyapi("CONF-AZURE-FORM-RECOGNIZER-KEY")),
     )
 
     # Abrimos el documento que queremos analizar
@@ -127,6 +127,8 @@ def obtenerChunks(contenido: str = ""):
 
     return chunksConIdentificadores
 
+nombre_servicio = "bclumin" 
+nombre_index = "lumin_index"
 
 # Carga un archivo en una base de conocimiento
 def cargarArchivo(rutaDeArchivo=None, nombreDeBaseDeConocimiento: str = ""):
@@ -138,9 +140,9 @@ def cargarArchivo(rutaDeArchivo=None, nombreDeBaseDeConocimiento: str = ""):
 
     # Nos conectamos a la base de conocimiento
     baseDeConocimiento = SearchClient(
-        f"https://{key.getkeyapi("CONF_AZURE_SEARCH_SERVICE_NAME")}.search.windows.net",
-        nombreDeBaseDeConocimiento,
-        AzureKeyCredential(key.getkeyapi("CONF_AZURE_SEARCH_KEY")),
+        f"https://{nombre_servicio}.search.windows.net",
+        nombre_index,
+        AzureKeyCredential(key.getkeyapi("CONF-AZURE-SEARCH-KEY"))
     )
 
     # Insertamos los chunks en la base de conocimiento

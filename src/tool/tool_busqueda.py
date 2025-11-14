@@ -1,8 +1,6 @@
 from langchain.tools import tool
 from sqlalchemy.orm import Session
 from src.util import util_schemas as sch
-from src.crud import crud_tickets
-from src.util import util_base_de_datos as db
 
 
 class ToolBusqueda:
