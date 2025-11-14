@@ -39,14 +39,14 @@ async def get_glpi_profile(username: str, password: str) -> dict:
             resp_init.raise_for_status()
             session_token = resp_init.json()["session_token"]
 
-            # --- PASO 2: Obtener la Sesión Completa (¡CORREGIDO!) ---
+            # --- PASO 2: Obtener la Sesión Completa (esto estaba bien) ---
             headers_profile = {
                 "App-Token": APP_TOKEN,
                 "Session-Token": session_token,
                 **FAKE_USER_AGENT
             }
             resp_profile = await client.get(
-                f"{GLPI_URL}/getFullSession",  # <-- CAMBIADO DE getActiveProfile
+                f"{GLPI_URL}/getFullSession",
                 headers=headers_profile
             )
             resp_profile.raise_for_status()
@@ -94,37 +94,39 @@ async def login_con_usuario_y_pass(
 
     # --- INICIO DE LA CORRECCIÓN ---
 
-    # 2. Navegar la estructura JSON anidada para encontrar el perfil de usuario
-    # La estructura es: { "session": { "glpiuser": { ... } } }
-    user_profile = session_data.get("session", {}).get("glpiuser", {})
+    # 2. Navegar la estructura JSON anidada
+    # Los datos del usuario están en session_data['session']
+    user_profile = session_data.get("session", {})
 
     if not user_profile:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="La respuesta de GLPI no contenía datos de sesión del usuario (session.glpiuser)."
+            detail="La respuesta de GLPI no contenía datos de 'session'."
         )
 
     # 3. Extraer datos del perfil (¡CORREGIDO!)
-    # Ahora buscamos dentro de 'user_profile'
-    user_id = user_profile.get("id")
-    user_name = user_profile.get("name")  # 'name' en getFullSession es el login (ej. 'jperez')
-    email = user_profile.get("mail")  # 'mail' es el correo
-    first_name = user_profile.get("firstname", "")
-    last_name = user_profile.get("lastname") or user_profile.get("realname", "")
+    # Ahora buscamos las claves que vimos en el print: 'glpiID', 'glpiname', etc.
+    user_id = user_profile.get("glpiID")
+    user_name = user_profile.get("glpiname")
+    email = user_profile.get("mail") or user_profile.get("email")  # Buscar ambos por si acaso
+
+    first_name = user_profile.get("glpifirstname", "")
+    last_name = user_profile.get("glpirealname", "")  # 'glpirealname' parece ser el apellido en tu log
     full_name = f"{first_name} {last_name}".strip()
 
     # 4. Validación (¡CORREGIDA!)
-    if not user_id or not email or not user_name:
+    # El email puede no existir, así que lo quitamos de la validación crítica
+    if not user_id or not user_name:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="El perfil de usuario de GLPI no contiene 'id', 'name' (login) o 'mail'."
+            detail="El perfil de usuario de GLPI no contiene 'glpiID' o 'glpiname'."
         )
 
     # 5. Crear el "pasaporte" (TokenData)
     token_data_payload = sch.TokenData(
         glpi_id=user_id,
-        nombre=full_name or user_name,  # Usar nombre completo, o el username como fallback
-        correo=email,
+        nombre=full_name or user_name,
+        correo=email or "",  # Pasamos un string vacío si el email es None
         glpi_username=user_name
     )
 
