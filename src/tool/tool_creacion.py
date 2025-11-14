@@ -1,17 +1,10 @@
 # src/tool/tool_creacion.py
 from langchain_core.tools import tool
-from sqlalchemy.orm import Session  # <-- ELIMINADO
 from enum import Enum
-import httpx  # <-- ¡NUEVO!
-
-from datetime import datetime, date
+import httpx
 
 # Importamos los schemas, el keyvault y el formateador
 from src.util import util_schemas as sch, util_keyvault as key, util_formatear_conversacion
-from src.util.util_memory import memory
-
-
-# from src.crud import crud_tickets <-- ELIMINADO
 
 # Estas urgencias deben coincidir con los IDs numéricos de GLPI
 class UrgenciaTicket(str, Enum):
@@ -21,14 +14,13 @@ class UrgenciaTicket(str, Enum):
     ALTA = "4"
     MUY_ALTA = "5"
 
+FAKE_USER_AGENT = {"User-Agent": "python-requests/2.28.1"}
 
 class ToolCreacion:
     def __init__(self, user_info: sch.TokenData, thread_id: str):
-        # self.db = db <-- ¡YA NO SE USA!
-        self.user_info = user_info  # Este es el TokenData con el glpi_id del usuario
+        self.user_info = user_info
         self.thread_id = thread_id
 
-        # Guardamos las credenciales del "Sistema" para crear tickets
         self.GLPI_URL = key.get_glpi_url()
         self.APP_TOKEN = key.get_glpi_app_token()
         self.SYSTEM_USER_TOKEN = key.get_glpi_system_user_token()
@@ -44,7 +36,8 @@ class ToolCreacion:
                 # --- PASO 1: Iniciar sesión como Sistema ---
                 headers_init = {
                     "App-Token": self.APP_TOKEN,
-                    "Authorization": f"user_token {self.SYSTEM_USER_TOKEN}"
+                    "Authorization": f"user_token {self.SYSTEM_USER_TOKEN}",
+                    **FAKE_USER_AGENT
                 }
                 resp_init = await client.get(f"{self.GLPI_URL}/initSession", headers=headers_init)
                 resp_init.raise_for_status()
@@ -54,7 +47,8 @@ class ToolCreacion:
                 headers_create = {
                     "App-Token": self.APP_TOKEN,
                     "Session-Token": session_token,
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    **FAKE_USER_AGENT
                 }
 
                 resp_create = await client.post(
@@ -74,7 +68,11 @@ class ToolCreacion:
             finally:
                 # --- PASO 3: Cerrar sesión de Sistema ---
                 if session_token:
-                    headers_kill = {"App-Token": self.APP_TOKEN, "Session-Token": session_token}
+                    headers_kill = {
+                        "App-Token": self.APP_TOKEN,
+                        "Session-Token": session_token,
+                        **FAKE_USER_AGENT
+                    }
                     await client.get(f"{self.GLPI_URL}/killSession", headers=headers_kill)
 
     def get_tool(self):

@@ -10,6 +10,8 @@ from src.auth import security
 
 router = APIRouter()
 
+FAKE_USER_AGENT = {"User-Agent": "python-requests/2.28.1"}
+
 
 async def get_glpi_profile(username: str, password: str) -> dict:
     """
@@ -30,7 +32,8 @@ async def get_glpi_profile(username: str, password: str) -> dict:
             # --- PASO 1: Iniciar sesión con Basic Auth (usuario/pass) ---
             headers_init = {
                 "App-Token": APP_TOKEN,
-                "Authorization": auth_header_value
+                "Authorization": auth_header_value,
+                **FAKE_USER_AGENT
             }
             resp_init = await client.get(f"{GLPI_URL}/initSession", headers=headers_init)
 
@@ -41,7 +44,8 @@ async def get_glpi_profile(username: str, password: str) -> dict:
             # --- PASO 2: Obtener el Perfil del Usuario ---
             headers_profile = {
                 "App-Token": APP_TOKEN,
-                "Session-Token": session_token
+                "Session-Token": session_token,
+                **FAKE_USER_AGENT
             }
             resp_profile = await client.get(
                 f"{GLPI_URL}/getActiveProfile",
@@ -74,7 +78,11 @@ async def get_glpi_profile(username: str, password: str) -> dict:
         finally:
             # --- PASO 3: Cerrar Sesión (importante) ---
             if session_token:
-                headers_kill = {"App-Token": APP_TOKEN, "Session-Token": session_token}
+                headers_kill = {
+                    "App-Token": APP_TOKEN,
+                    "Session-Token": session_token,
+                    **FAKE_USER_AGENT
+                }
                 # Usamos 'await' también para la llamada de cierre
                 await client.get(f"{GLPI_URL}/killSession", headers=headers_kill)
 
