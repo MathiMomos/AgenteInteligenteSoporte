@@ -21,7 +21,7 @@ async def chat_with_agent(
     )
 
     response_text = await agente_principal.handle_query(
-        query=request.query,
+        query=request.message,
         thread_id=thread_id,
         user_info=current_user
     )

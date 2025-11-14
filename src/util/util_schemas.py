@@ -44,7 +44,7 @@ class ChatRequest(BaseModel):
     """
     Define la estructura de una petición al endpoint de chat.
     """
-    query: str = Field(..., description="El mensaje enviado por el usuario.")
+    message: str = Field(..., description="El mensaje enviado por el usuario.")
     thread_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()),
         description="El ID único de la conversación para mantener el historial."
