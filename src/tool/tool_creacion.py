@@ -109,13 +109,13 @@ class ToolCreacion:
                         
                         # --- ¡CAMBIO CLAVE! ---
                         # Asignamos el ticket al usuario que está logueado en el chatbot
-                        "users_id_recipient": self.user_info.glpi_id,
 
+                        "_users_id_requester": self.user_info.glpi_id,
                         "status": 1  # 1 = Nuevo
                         # "type": 1 (Opcional: 1=Incidencia, 2=Solicitud)
                     }
                 }
-
+                print(f'ID del usuario: {self.user_info.glpi_id}')
                 # Llamamos a la API de GLPI de forma asíncrona
                 ticket_creado = await self._call_glpi_api(payload)
 
