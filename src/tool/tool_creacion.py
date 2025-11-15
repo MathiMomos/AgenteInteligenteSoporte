@@ -26,6 +26,10 @@ class ImpactoTicket(str, Enum):
     MEDIO = "2"
     ALTO = "3"
 
+class TipoTicket(str, Enum):
+    INCIDENTE =  "1"
+    SOLICITUD = "2"
+
 class PrioridadTicket(str, Enum):
     BAJA = "1"
     MEDIA = "2"
@@ -91,7 +95,7 @@ class ToolCreacion:
 
         # ¡IMPORTANTE! La herramienta debe ser 'async' porque usa httpx 'await'
         @tool
-        async def crear_ticket(asunto: str, descripcion: str, urgencia: UrgenciaTicket, impacto: ImpactoTicket, prioridad: PrioridadTicket) -> str:
+        async def crear_ticket(asunto: str, descripcion: str, urgencia: UrgenciaTicket, impacto: ImpactoTicket, prioridad: PrioridadTicket, tipo: TipoTicket) -> str:
             """
             Crea un nuevo ticket de soporte en GLPI. Debe llamarse sólo cuando
             se conozca 'asunto' (título), 'descripcion' (detalle del problema)
@@ -111,8 +115,8 @@ class ToolCreacion:
                         # Asignamos el ticket al usuario que está logueado en el chatbot
 
                         "_users_id_requester": self.user_info.glpi_id,
-                        "status": 1  # 1 = Nuevo
-                        # "type": 1 (Opcional: 1=Incidencia, 2=Solicitud)
+                        "status": 1,  # 1 = Nuevo
+                        "type": tipo.value
                     }
                 }
                 print(f'ID del usuario: {self.user_info.glpi_id}')

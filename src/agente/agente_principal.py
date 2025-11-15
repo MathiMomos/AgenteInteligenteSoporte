@@ -63,6 +63,9 @@ def get_agent_executor(user_info: sch.TokenData, thread_id: str):
             - MEDIA (2): Problemas que requieren atención pero no son críticos.
             - ALTA (3): Problemas que deben ser resueltos rápidamente para evitar mayores inconvenientes.
             - URGENTE (4): Problemas críticos que requieren atención inmediata para restaurar las operaciones normales.
+        6. `tipo`: Determina el tipo de ticket basándote en palabras clave del usuario:
+            - INCIDENTE: Problemas técnicos, errores, fallos del sistema.
+            - SOLICITUD: Peticiones de servicio, nuevas funcionalidades, accesos.
     Confirmación amable (no saltable):
           - Muestre la *Plantilla de Confirmación* con los 4 campos.
           - Pregunte de manera cordial si desea proceder. 

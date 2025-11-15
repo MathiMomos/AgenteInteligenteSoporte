@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="da4d699a-805f-4293-b24a-af54aa62c16a" name="Changes" comment="requirements.txt actualizado">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/agente/agente_principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/agente/agente_principal.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tool/tool_creacion.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tool/tool_creacion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/util_keyvault.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/util_keyvault.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -262,7 +262,7 @@
       <workItem from="1762913489405" duration="783000" />
       <workItem from="1762914386052" duration="3632000" />
       <workItem from="1763057203718" duration="14705000" />
-      <workItem from="1763132899529" duration="5871000" />
+      <workItem from="1763132899529" duration="7742000" />
     </task>
     <task id="LOCAL-00001" summary="FIRST COMMIT">
       <option name="closed" value="true" />
@@ -600,7 +600,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763081859247</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="requirements.txt actualizado">
+      <option name="closed" value="true" />
+      <created>1763173370139</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1763173370139</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
