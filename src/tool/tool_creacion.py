@@ -1,6 +1,5 @@
 # src/tool/tool_creacion.py
 from langchain_core.tools import tool
-from sqlalchemy.orm import Session  # <-- ELIMINADO
 from enum import Enum
 import httpx  # <-- ¡NUEVO!
 
@@ -8,18 +7,14 @@ from datetime import datetime, date
 
 # Importamos los schemas, el keyvault y el formateador
 from src.util import util_schemas as sch, util_keyvault as key, util_formatear_conversacion
-from src.util.util_memory import memory
-
 
 # from src.crud import crud_tickets <-- ELIMINADO
 
 # Estas urgencias deben coincidir con los IDs numéricos de GLPI
 class UrgenciaTicket(str, Enum):
-    MUY_BAJA = "1"
     BAJA = "2"
     MEDIA = "3"
     ALTA = "4"
-    MUY_ALTA = "5"
 
 class ImpactoTicket(str, Enum):
     BAJO = "1"

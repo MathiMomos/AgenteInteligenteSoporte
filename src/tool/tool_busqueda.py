@@ -1,102 +1,142 @@
-from langchain.tools import tool
-from sqlalchemy.orm import Session
-from src.util import util_schemas as sch
+from langchain_core.tools import tool
+import httpx
+import re
+from src.util import util_schemas as sch, util_keyvault as key
 
+# Mapeo de Estados de GLPI
+GLPI_STATUS_MAP = {
+    1: "Nuevo",
+    2: "En curso (Asignado)",
+    3: "En curso (Planificado)",
+    4: "En espera",
+    5: "Resuelto",
+    6: "Cerrado"
+}
 
 class ToolBusqueda:
-    def __init__(self, db: Session, user_info: sch.TokenData):
-        self.db = db
+    def __init__(self, user_info: sch.TokenData, thread_id: str):
         self.user_info = user_info
+        self.thread_id = thread_id
+        self.GLPI_URL = key.get_glpi_url()
+        self.APP_TOKEN = key.get_glpi_app_token()
+        self.SYSTEM_USER_TOKEN = key.get_glpi_system_user_token()
 
-    def _format_ticket_details(self, ticket: db.Ticket) -> str:
+    # --- HELPER 1: Gestión Centralizada de Peticiones (Auth -> Request -> Kill) ---
+    async def _glpi_request(self, endpoint: str, params: dict) -> dict:
         """
-        Función auxiliar para formatear los detalles de un ticket en un texto legible.
+        Maneja el ciclo de vida completo: Login -> Petición -> Logout.
+        Recibe el endpoint parcial (ej: 'Ticket/1') y los parámetros.
         """
-
-        nombre_analista = "Aún no asignado"
-        try:
-            # Intentamos acceder directamente a través de la relación correcta
-            nombre_analista = ticket.analista.persona.external_collection[0].nombre
-        except (AttributeError, IndexError):
-            # Capturamos dos posibles errores:
-            # 1. AttributeError: Si ticket.analista o .persona es None.
-            # 2. IndexError: Si .external_collection existe pero está vacía.
-            # Si ocurre alguno, simplemente continuamos, manteniendo "Aún no asignado".
-            pass
-
-        try:
-            nombre_servicio = ticket.cliente_servicio.servicio.nombre
-        except Exception:
-            nombre_servicio = "No disponible"
-        
-        fecha_creacion = "-"
-        if hasattr(ticket, "created_at") and ticket.created_at:
+        session_token = None
+        async with httpx.AsyncClient() as client:
             try:
-                fecha_creacion = ticket.created_at.strftime("%d/%m/%Y")
-            except Exception:
-                fecha_creacion = "-"
+                # 1. Iniciar Sesión
+                headers_init = {
+                    "App-Token": self.APP_TOKEN,
+                    "Authorization": f"user_token {self.SYSTEM_USER_TOKEN}"
+                }
+                resp_init = await client.get(f"{self.GLPI_URL}/initSession", headers=headers_init)
+                resp_init.raise_for_status()
+                session_token = resp_init.json()["session_token"]
 
-        details = (
-            f"  - **ID:** #{ticket.id_ticket}\n"
-            f"  - **Asunto:** {ticket.asunto}\n"
-            f"  - **Servicio:** {nombre_servicio}\n"
-            f"  - **Nivel:** {ticket.nivel}\n"
-            f"  - **Tipo:** {ticket.tipo}\n"
-            f"  - **Estado:** {ticket.estado}"
-            f"  - **Analista:** {nombre_analista}"
-            f"  - **Fecha de Creación:** {fecha_creacion}"
+                # 2. Ejecutar la petición real
+                headers_req = {
+                    "App-Token": self.APP_TOKEN,
+                    "Session-Token": session_token,
+                    "Content-Type": "application/json"
+                }
+                
+                resp = await client.get(
+                    f"{self.GLPI_URL}/{endpoint}",
+                    headers=headers_req,
+                    params=params
+                )
+                    
+                resp.raise_for_status()
+                return resp.json()
+
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 401:
+                    raise Exception("Error de autenticación en GLPI (System Token).")
+                raise Exception(f"Error GLPI ({e.response.status_code}): {e.response.text}")
+            except Exception as e:
+                raise Exception(f"Error de conexión o inesperado: {str(e)}")
+            finally:
+                # 3. Matar sesión (Siempre ocurre)
+                if session_token:
+                    headers_kill = {"App-Token": self.APP_TOKEN, "Session-Token": session_token}
+                    await client.get(f"{self.GLPI_URL}/killSession", headers=headers_kill)
+
+    # --- HELPER 2: Utilidades de Formato ---
+    def _get_status_label(self, status_code) -> str:
+        """Devuelve el texto del estado de forma segura."""
+        try:
+            return GLPI_STATUS_MAP.get(int(status_code), f"Desconocido ({status_code})")
+        except (ValueError, TypeError):
+            return f"Desconocido ({status_code})"
+
+    def _clean_html(self, raw_html: str) -> str:
+        if not raw_html: return "Sin contenido"
+        clean_text = re.sub(r'<[^>]+>', '', raw_html)
+        return clean_text.replace('&nbsp;', ' ').strip()
+
+    def _format_single_ticket(self, ticket: dict) -> str:
+        return (
+            f"🎟️ **Ticket #{ticket.get('id')}**\n"
+            f"📌 **Asunto:** {ticket.get('name')}\n"
+            f"📅 **Fecha:** {ticket.get('date_creation', 'N/A')}\n"
+            f"🚦 **Estado:** {self._get_status_label(ticket.get('status'))}\n"
+            f"📝 **Descripción:** {self._clean_html(ticket.get('content', ''))}\n"
         )
 
-        if ticket.estado == 'finalizado' and ticket.diagnostico:
-            details += f"\n  - **Diagnóstico:** {ticket.diagnostico}"
+    # --- TOOLS ---
+    def get_tools(self):
+        
+        @tool
+        async def buscar_ticket_por_id(ticket_id: int) -> str:
+            """Busca un ticket en GLPI por su ID numérico."""
+            try:
+                # Llamada simplificada
+                ticket = await self._glpi_request(f"Ticket/{ticket_id}", params={})
 
-        return details
+                if not ticket:
+                    return f"No encontré el ticket #{ticket_id}."
 
-    def get_tools(self) -> list:
-        """
-        Fábrica que construye y devuelve una LISTA de todas las herramientas de búsqueda.
-        """
+                # Validación de seguridad
+                requester_id = ticket.get('_users_id_requester')
+                if str(requester_id) != str(self.user_info.glpi_id):
+                    return f"No tienes permisos para ver el ticket #{ticket_id}."
+
+                return self._format_single_ticket(ticket)
+
+            except Exception as e:
+                return f"Error buscando ticket: {e}"
 
         @tool
-        def buscar_ticket_por_id(ticket_id: int) -> str:
-            """Busca un ticket específico por su número de ID. Úsalo cuando el usuario te dé un número."""
-            ticket = crud_tickets.get_ticket_by_id_db(self.db, ticket_id, self.user_info)
-            if ticket:
-                formatted_details = self._format_ticket_details(ticket)
-                return f"He encontrado los detalles del ticket solicitado:\n{formatted_details}"
-            return f"No encontré el ticket #{ticket_id} o no tienes permiso para verlo."
+        async def listar_mis_tickets() -> str:
+            """Muestra los últimos tickets del usuario actual."""
+            try:
+                # Llamada simplificada con parámetros
+                params = {"with_tickets": "true", "expand_dropdowns": "true"}
+                user_data = await self._glpi_request(f"User/{self.user_info.glpi_id}", params=params)
 
-        @tool
-        def listar_tickets_abiertos() -> str:
-            """Lista todos los tickets abiertos (no finalizados) del colaborador actual. Úsalo si el usuario pregunta por 'mis tickets abiertos'."""
-            tickets = crud_tickets.get_all_open_tickets(self.db, self.user_info)
-            if not tickets:
-                return "Usted no tiene tickets abiertos actualmente."
+                tickets = user_data.get("_tickets", [])
+                if not tickets:
+                    return "No tienes tickets registrados."
 
-            tickets_formateados = [self._format_ticket_details(t) for t in tickets]
-            respuesta_final = "\n\n".join(tickets_formateados)
-            return f"He encontrado los siguientes tickets abiertos:\n{respuesta_final}"
+                # Ordenar y cortar
+                tickets = sorted(tickets, key=lambda x: x.get('id', 0), reverse=True)[:7]
 
-        @tool
-        def listar_tickets() -> str:
-            """Lista todos los tickets del colaborador actual. Úsalo si el usuario pregunta por 'todos mis tickets'."""
-            tickets = crud_tickets.get_all_tickets(self.db, self.user_info)
-            if not tickets:
-                return "Usted no tiene tickets actualmente."
+                lines = ["📋 **Tus últimos tickets:**\n"]
+                for t in tickets:
+                    lines.append(
+                        f"- **#{t.get('id')}**: {t.get('name', 'S/A')}\n"
+                        f"  Estado: {self._get_status_label(t.get('status'))} | Fecha: {t.get('date', '-')}\n"
+                    )
+                
+                return "\n".join(lines)
 
-            tickets_formateados = [self._format_ticket_details(t) for t in tickets]
-            respuesta_final = "\n\n".join(tickets_formateados)
-            return f"He encontrado los siguientes tickets:\n{respuesta_final}"
+            except Exception as e:
+                return f"Error listando tickets: {e}"
 
-        @tool
-        def buscar_tickets_por_asunto(asunto: str) -> str:
-            """Busca tickets cuyo asunto coincida parcialmente con un texto."""
-            tickets = crud_tickets.get_tickets_by_subject(self.db, asunto, self.user_info)
-            if not tickets:
-                return f"No encontré tickets cuyo asunto contenga '{asunto}'."
-
-            tickets_formateados = [self._format_ticket_details(t) for t in tickets]
-            respuesta_final = "\n\n".join(tickets_formateados)
-            return f"He encontrado los siguientes tickets relacionados con '{asunto}':\n{respuesta_final}"
-
-        return [buscar_ticket_por_id, listar_tickets, listar_tickets_abiertos, buscar_tickets_por_asunto]
+        return [buscar_ticket_por_id, listar_mis_tickets]

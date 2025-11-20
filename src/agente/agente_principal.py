@@ -47,13 +47,11 @@ def get_agent_executor(user_info: sch.TokenData, thread_id: str):
     - Solo debes usar la herramienta `crear_ticket` si la base de conocimientos no fue suficiente o si el usuario solicita explícitamente crear un ticket.
     - Antes de llamar a `crear_ticket`, DEBES haber recolectado 3 datos del usuario:
         1. `asunto`: Un título corto para el ticket (ej. "Falla al exportar reporte").
-        2. `descripcion`: Un detalle completo del problema que está experimentando.
-        3. `urgencia`: Clasifique la urgencia como 'MUY_BAJA', 'BAJA', 'MEDIA', 'ALTA' o 'MUY_ALTA' según estas reglas y con criterios OBJETIVOS (no por preferencia declarada):
-            - MUY_BAJA (1): Dudas, preguntas, errores estéticos o menores que NO impiden el trabajo.
+        2. `descripcion`: Un detalle completo del problema que está experimentando. Si el problema esta relacionado con un local específico, hardware o software, asegúrate de incluir esa información, así como pedir la ubicación exacta si es necesario.
+        3. `urgencia`: Clasifique la urgencia como 'BAJA', 'MEDIA' o 'ALTA' según estas reglas y con criterios OBJETIVOS (no por preferencia declarada):
             - BAJA (2): Errores que afectan una funcionalidad específica o causan lentitud, pero el resto de la plataforma funciona.
             - MEDIA (3): Errores bloqueantes donde una función principal no sirve o el usuario no puede realizar su trabajo.
             - ALTA (4): Errores críticos que afectan múltiples usuarios o funciones clave.
-            - MUY_ALTA (5): Toda la plataforma o servicio está caído, hay riesgo de pérdida de datos, o afecta transacciones financieras.
         4. `impacto`: Clasifique el impacto como 'BAJO', 'MEDIO' o 'ALTO' según estas reglas:
             - BAJO (1): Afecta a un solo usuario o a una pequeña parte del sistema sin impacto significativo en las operaciones.
             - MEDIO (2): Afecta a varios usuarios o una función importante, pero existen soluciones alternativas temporales.
