@@ -7,7 +7,7 @@ from src.util import util_schemas as sch
 
 from src.tool.tool_creacion import ToolCreacion
 from src.tool.tool_conocimiento import get_conocimiento_tool
-
+from src.tool.tool_busqueda import ToolBusqueda
 
 def get_agent_executor(user_info: sch.TokenData, thread_id: str):
     """
@@ -16,9 +16,11 @@ def get_agent_executor(user_info: sch.TokenData, thread_id: str):
     llm = obtener_llm()
 
     tool_creacion = ToolCreacion(user_info=user_info, thread_id=thread_id)
-
+    tool_busqueda = ToolBusqueda(user_info=user_info, thread_id=thread_id)
+    
     tools_personalizadas = [
         tool_creacion.get_tool(),
+        *tool_busqueda.get_tools(),
         get_conocimiento_tool()
     ]
 
