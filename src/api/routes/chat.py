@@ -7,6 +7,9 @@ from src.agente import agente_principal
 
 router = APIRouter()
 
+FAKE_USER_AGENT = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
 
 @router.post("", response_model=sch.ChatResponse)
 async def chat_with_agent(

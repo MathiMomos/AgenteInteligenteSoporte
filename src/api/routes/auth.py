@@ -11,8 +11,9 @@ from src.auth import security
 router = APIRouter()
 
 # Mantenemos el User-Agent falso, ya que funcionó
-FAKE_USER_AGENT = {"User-Agent": "python-requests/2.28.1"}
-
+FAKE_USER_AGENT = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
 
 async def get_glpi_profile(username: str, password: str) -> dict:
     """
@@ -27,7 +28,7 @@ async def get_glpi_profile(username: str, password: str) -> dict:
     auth_header_value = f"Basic {base64.b64encode(auth_bytes).decode('utf-8')}"
 
     session_token = None
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=True, follow_redirects=True, timeout=30.0) as client:
         try:
             # --- PASO 1: Iniciar sesión (esto estaba bien) ---
             headers_init = {
@@ -86,11 +87,6 @@ async def login_con_usuario_y_pass(
 ):
     # 1. Validar contra GLPI y obtener sesión completa
     session_data = await get_glpi_profile(form_data.username, form_data.password)
-
-    # (Debug print)
-    print("====== SESIÓN COMPLETA DE GLPI RECIBIDA ======")
-    print(session_data)
-    print("==============================================")
 
     # --- INICIO DE LA CORRECCIÓN ---
 
