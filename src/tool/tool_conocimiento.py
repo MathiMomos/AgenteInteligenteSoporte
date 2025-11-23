@@ -1,4 +1,4 @@
-from langchain_core.tools import create_retriever_tool
+from langchain_core.tools import Tool
 from src.util.util_base_conocimientos import obtener_bc
 
 
@@ -9,18 +9,18 @@ def get_conocimiento_tool():
     Usa la función 'create_retriever_tool' de LangChain para encapsular
     nuestro retriever de la base de conocimientos de una manera optimizada.
     """
+    def buscar_documentos_wrapper(query: str) -> str:
+        docs = retriever.invoke(query)
+        return "\n\n".join([d.page_content for d in docs])
     # 1. Obtenemos nuestro retriever (el que se conecta a Azure AI Search)
     retriever = obtener_bc()
 
-    # 2. Usamos la fábrica de LangChain para crear la herramienta
-    conocimiento_tool = create_retriever_tool(
-        retriever,
-        "agente_conocimiento",  # El nombre que el LLM usará para llamar a la herramienta
-        (
-            "Usa esta herramienta para responder dudas generales y preguntas frecuentes "
-            "basándote en la base de conocimientos interna (documentos de soporte, FAQs, etc.). "
-            "Pásale la pregunta exacta del usuario a esta herramienta."
-        )
+    return Tool.from_function(
+        func=buscar_documentos_wrapper,
+        name="BaseDeConocimientos",
+        description=(
+            "Eres BC_Tool. Sólo puedes buscar y devolver fragmentos de la base de conocimiento."
+            "No inventes contenido. Devuelve texto y metadatos de la fuente."
+            "Si no encuentras resultados relevantes, responde vacío."
+        ),
     )
-
-    return conocimiento_tool

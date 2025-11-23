@@ -11,8 +11,9 @@ from src.auth import security
 router = APIRouter()
 
 # Mantenemos el User-Agent falso, ya que funcionó
-FAKE_USER_AGENT = {"User-Agent": "python-requests/2.28.1"}
-
+FAKE_USER_AGENT = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
 
 async def get_glpi_profile(username: str, password: str) -> dict:
     """
@@ -27,7 +28,7 @@ async def get_glpi_profile(username: str, password: str) -> dict:
     auth_header_value = f"Basic {base64.b64encode(auth_bytes).decode('utf-8')}"
 
     session_token = None
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=True, follow_redirects=True, timeout=30.0) as client:
         try:
             # --- PASO 1: Iniciar sesión (esto estaba bien) ---
             headers_init = {
@@ -87,7 +88,10 @@ async def login_con_usuario_y_pass(
     # 1. Validar contra GLPI y obtener sesión completa
     session_data = await get_glpi_profile(form_data.username, form_data.password)
 
-    # 2. Navegar la estructura JSON
+    # --- INICIO DE LA CORRECCIÓN ---
+
+    # 2. Navegar la estructura JSON anidada
+    # Los datos del usuario están en session_data['session']
     user_profile = session_data.get("session", {})
 
     if not user_profile:
@@ -96,45 +100,33 @@ async def login_con_usuario_y_pass(
             detail="La respuesta de GLPI no contenía datos de 'session'."
         )
 
-    print(user_profile)
-
-    # 3. Extraer datos del usuario
+    # 3. Extraer datos del perfil (¡CORREGIDO!)
+    # Ahora buscamos las claves que vimos en el print: 'glpiID', 'glpiname', etc.
     user_id = user_profile.get("glpiID")
     user_name = user_profile.get("glpiname")
-    email = user_profile.get("mail") or user_profile.get("email")
+    email = user_profile.get("mail") or user_profile.get("email")  # Buscar ambos por si acaso
 
-    # --- NUEVO: Extraer datos de la entidad ---
-    # glpiactive_entity suele ser un string o int en el JSON, lo forzamos a int
-    entity_id_raw = user_profile.get("glpiactive_entity", 0)
-    entity_name = user_profile.get("glpiactive_entity_name", "")
-
-    try:
-        entity_id = int(entity_id_raw)
-    except (ValueError, TypeError):
-        entity_id = 0
-
-    # Construir nombre
     first_name = user_profile.get("glpifirstname", "")
-    last_name = user_profile.get("glpirealname", "")
+    last_name = user_profile.get("glpirealname", "")  # 'glpirealname' parece ser el apellido en tu log
     full_name = f"{first_name} {last_name}".strip()
 
-    # 4. Validación
+    # 4. Validación (¡CORREGIDA!)
+    # El email puede no existir, así que lo quitamos de la validación crítica
     if not user_id or not user_name:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="El perfil de usuario de GLPI no contiene 'glpiID' o 'glpiname'."
         )
 
-    # 5. Crear el "pasaporte" (TokenData) CON LA ENTIDAD
+    # 5. Crear el "pasaporte" (TokenData)
     token_data_payload = sch.TokenData(
         glpi_id=user_id,
         nombre=full_name or user_name,
-        correo=email or "",
-        glpi_username=user_name,
-        # Guardamos la entidad en el token
-        glpi_entity_id=entity_id,
-        glpi_entity_name=entity_name
+        correo=email or "",  # Pasamos un string vacío si el email es None
+        glpi_username=user_name
     )
+
+    # --- FIN DE LA CORRECCIÓN ---
 
     # 6. Crear y devolver nuestro JWT
     access_token = security.create_access_token(data=token_data_payload)
