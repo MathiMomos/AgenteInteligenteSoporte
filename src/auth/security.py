@@ -56,7 +56,9 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> sch.TokenData:
             glpi_id=payload.get("glpi_id"),
             nombre=payload.get("nombre"),
             correo=payload.get("correo"),
-            glpi_username=payload.get("glpi_username")
+            glpi_username=payload.get("glpi_username"),
+            glpi_entity_id = payload.get("glpi_entity_id"),
+            glpi_entity_name = payload.get("glpi_entity_name")
         )
 
         if token_data.correo is None:

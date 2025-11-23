@@ -29,10 +29,12 @@ class TokenData(BaseModel):
     Es el "pasaporte" de un usuario validado por GLPI.
     """
     # --- Datos de GLPI para el Contexto del Agente ---
-    glpi_id: int  # ID de usuario en GLPI
-    nombre: str  # Nombre completo (ej. "Juan Pérez")
+    glpi_id: int
+    nombre: str
     correo: str
-    glpi_username: str  # El 'login' de GLPI (ej. 'jperez')
+    glpi_username: str
+    glpi_entity_id: int
+    glpi_entity_name: str
 
     # 'sub' (correo) y 'exp' (expiración) se añaden por separado
 
