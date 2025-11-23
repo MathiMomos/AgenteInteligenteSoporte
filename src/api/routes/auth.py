@@ -110,6 +110,9 @@ async def login_con_usuario_y_pass(
     last_name = user_profile.get("glpirealname", "")  # 'glpirealname' parece ser el apellido en tu log
     full_name = f"{first_name} {last_name}".strip()
 
+    entity_id= int(user_profile.get("glpiactive_entity", 0))
+    entity_name = user_profile.get("glpiactive_entity_name", "")
+
     # 4. Validación (¡CORREGIDA!)
     # El email puede no existir, así que lo quitamos de la validación crítica
     if not user_id or not user_name:
@@ -122,8 +125,10 @@ async def login_con_usuario_y_pass(
     token_data_payload = sch.TokenData(
         glpi_id=user_id,
         nombre=full_name or user_name,
-        correo=email or "",  # Pasamos un string vacío si el email es None
-        glpi_username=user_name
+        correo=email or "",
+        glpi_username=user_name,
+        glpi_entity_id=entity_id,
+        glpi_entity_name=entity_name
     )
 
     # --- FIN DE LA CORRECCIÓN ---
