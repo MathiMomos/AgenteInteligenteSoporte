@@ -17,7 +17,7 @@ def getkeyapi(name: str) -> str:
 
 def get_glpi_url() -> str:
     """Devuelve la URL base de la API de GLPI"""
-    return "https://glpi.mediterraneo.com.pe/apirest.php/"
+    return getkeyapi("GLPI-URL")
 
 def get_glpi_app_token() -> str:
     """Devuelve el App-Token de GLPI."""

@@ -133,9 +133,9 @@ class ToolBusqueda:
                     "forcedisplay[0]": 2,  # ID
                     "forcedisplay[1]": 1,  # Name/Title
                     "forcedisplay[2]": 12, # Status
-                    "forcedisplay[3]": 3, # Priority
+                    "forcedisplay[3]": 3,  # Priority
                     "forcedisplay[4]": 15, # Date creation
-                    "forcedisplay[5]": 21,  # Content (Descripción)
+                    "forcedisplay[5]": 21, # Content (Descripción)
                 }
 
                 search_result = await self._glpi_request("search/Ticket", params=params)
